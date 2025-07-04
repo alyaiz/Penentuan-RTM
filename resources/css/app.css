@@ -240,6 +240,25 @@ body {
         letter-spacing: var(--tracking-normal);
     }
 
+    /* [data-radix-dialog-overlay] {
+        transition: all 0.2s ease-in-out;
+    }
+
+    [data-radix-dialog-overlay][data-state='closed'] {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        display: none !important;
+    }
+
+    body:not([data-scroll-locked]) {
+        overflow: auto !important;
+        pointer-events: auto !important;
+    }
+
+    body[data-scroll-locked] {
+        overflow: hidden;
+    } */
+
     * {
         scrollbar-width: auto;
         scrollbar-color: oklch(0.9551 0 0) transparent;

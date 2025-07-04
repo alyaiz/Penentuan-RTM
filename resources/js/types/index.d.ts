@@ -58,3 +58,8 @@ export interface Paginator<T> {
     first_page_url: string;
     last_page_url: string;
 }
+
+type DeleteErrorResponse = {
+    message?: string;
+    suggestion?: string;
+};

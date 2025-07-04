@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -82,6 +83,29 @@ class UserController extends Controller
 
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+
+        if (! $user) {
+            return redirect()->back()->withErrors([
+                'message' => 'Pengguna tidak ditemukan.',
+            ]);
+        }
+
+        try {
+            $user->delete();
+
+            return redirect()->back()->with('success', 'Data Pengguna berhasil dihapus aaaa.');
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return redirect()->back()->withErrors([
+                    'message' => 'Pengguna tidak dapat dihapus karena sudah digunakan pada data lain.',
+                    'suggestion' => 'Nonaktifkan pengguna ini jika tidak ingin digunakan lagi.',
+                ]);
+            }
+
+            return redirect()->back()->withErrors([
+                'message' => 'Terjadi kesalahan saat menghapus pengguna.',
+            ]);
+        }
     }
 }

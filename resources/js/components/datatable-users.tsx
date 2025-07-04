@@ -1,7 +1,7 @@
 // import { TableCellViewer } from '@/components/table-cell-viewer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,12 +30,13 @@ import {
     ChevronsRightIcon,
     CircleX,
     ColumnsIcon,
-    MoreVerticalIcon,
     UserRoundCheck,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import EditUserDialog from './edit-user-dialog';
+import { AddUserDialog } from './add-user-dialog';
+import DeleteUserDialog from './delete-user-dialog';
+import { EditUserDialog } from './edit-user-dialog';
 // import DialogPublicVideo from './dialog/dialog-public-video';
 // import DialogYourVideo from './dialog/dialog-your-video';
 
@@ -66,8 +67,8 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    // const [editingUser, setEditingUser] = useState<User | null>(null);
+    // const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { url } = usePage();
 
     useEffect(() => {
@@ -149,25 +150,29 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                 id: 'actions',
                 header: 'Aksi',
                 cell: ({ row }) => (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="text-muted-foreground data-[state=open]:bg-muted flex size-8" size="icon">
-                                <MoreVerticalIcon />
-                                <span className="sr-only">Open menu</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32">
-                            <DropdownMenuItem
-                                onClick={() => {
-                                    setEditingUser(row.original);
-                                    setIsDialogOpen(true);
-                                }}
-                            >
-                                Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Hapus</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center gap-2">
+                        <EditUserDialog user={row.original} />
+                        <DeleteUserDialog user={row.original} />
+                    </div>
+                    // <DropdownMenu>
+                    //     <DropdownMenuTrigger asChild>
+                    //         <Button variant="ghost" className="text-muted-foreground data-[state=open]:bg-muted flex size-8" size="icon">
+                    //             <MoreVerticalIcon />
+                    //             <span className="sr-only">Open menu</span>
+                    //         </Button>
+                    //     </DropdownMenuTrigger>
+                    //     <DropdownMenuContent align="end" className="w-32">
+                    //         <DropdownMenuItem
+                    //         // onClick={() => {
+                    //         //     setEditingUser(row.original);
+                    //         //     setIsDialogOpen(true);
+                    //         // }}
+                    //         >
+                    //             <EditUserDialog />
+                    //         </DropdownMenuItem>
+                    //         <DropdownMenuItem>Hapus</DropdownMenuItem>
+                    //     </DropdownMenuContent>
+                    // </DropdownMenu>
                 ),
             },
         ],
@@ -298,10 +303,9 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                                 </DropdownMenu>
                             </div>
 
-                            {/* <div className="flex-1 md:flex-none">
-                            {url.startsWith('/analysis/your-video') && <DialogYourVideo />}
-                            {url.startsWith('/analysis/public-video') && <DialogPublicVideo />}
-                        </div> */}
+                            <div className="flex-1 md:flex-none">
+                                <AddUserDialog />
+                            </div>
                         </div>
 
                         <Input
@@ -420,7 +424,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                 </div>
             </div>
 
-            {editingUser && <EditUserDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} user={editingUser} />}
+            {/* {editingUser && <EditUserDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} user={editingUser} />} */}
         </>
     );
 }

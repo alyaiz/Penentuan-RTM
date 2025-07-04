@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function rtms()
+    {
+        return $this->hasMany(Rtm::class, 'id_user');
+    }
 }

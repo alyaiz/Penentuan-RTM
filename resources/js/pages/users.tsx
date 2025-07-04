@@ -1,4 +1,5 @@
 import DataTableUsers from '@/components/datatable-users';
+import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
 import { Paginator, User, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -28,6 +29,7 @@ export default function Dashboard() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <Heading title="Manajemen Pengguna" description="Kelola data pengguna, ubah informasi akun, atau tambahkan pengguna baru." />
                 <DataTableUsers
                     data={data}
                     pageIndex={pageIndex}
