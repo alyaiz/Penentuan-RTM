@@ -26,7 +26,7 @@ export default function DeleteUserDialog({ user }: DeleteUserDialogProps) {
     const handleDelete = () => {
         setIsSubmitting(true);
 
-        router.delete(`/users/${user.id}`, {
+        router.delete(`/pengguna/${user.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Berhasil Dihapus', {

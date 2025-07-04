@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rtms', function (Blueprint $table) {
+        Schema::create('criterias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_user')
-                ->constrained('users', 'id')
-                ->onDelete('restrict');
             $table->string('name');
+            $table->enum('type', ['penghasilan', 'pengeluaran', 'tempat_tinggal', 'status_kepemilikan_rumah', 'kondisi_rumah', 'aset_yang_dimiliki', 'transportasi', 'penerangan_rumah']);
+            $table->float('bobot');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rtms');
+        Schema::dropIfExists('criterias');
     }
 };

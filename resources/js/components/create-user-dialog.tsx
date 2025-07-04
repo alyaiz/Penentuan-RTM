@@ -12,60 +12,37 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { router } from '@inertiajs/react';
-import { AlertCircleIcon, Loader2, Pen } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircleIcon, Loader2, PlusIcon } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-interface EditUserDialogProps {
-    user: User;
-}
-
-export default function EditUserDialog({ user }: EditUserDialogProps) {
+export default function CreateUserDialog() {
     const [open, setOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [editPassword, setEditPassword] = useState(false);
     const [errors, setErrors] = useState<Record<string, string[]>>({});
 
     const [form, setForm] = useState({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status,
+        name: '',
+        email: '',
+        role: '',
+        status: '',
         password: '',
         password_confirmation: '',
     });
 
-    useEffect(() => {
-        if (user) {
-            setForm({
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                status: user.status,
-                password: '',
-                password_confirmation: '',
-            });
-        }
-    }, [user]);
-
-    const handleEdit = () => {
+    const handleInsert = () => {
+        console.log('Form data dikirim:', form);
         setIsSubmitting(true);
 
-        const { password, password_confirmation, ...rest } = form;
-        const payload = editPassword ? { ...rest, password, password_confirmation } : rest;
-
-        router.put(`/pengguna/${user.id}`, payload, {
-            preserveScroll: true,
+        router.post('/pengguna', form, {
             onSuccess: () => {
-                toast.success('Berhasil Diperbarui', {
-                    description: 'Data pengguna telah berhasil diperbarui.',
+                toast.success('Berhasil Ditambahkan', {
+                    description: 'Data pengguna baru berhasil disimpan.',
                 });
 
                 setErrors({});
-                setEditPassword(false);
                 setOpen(false);
             },
             onError: (err) => {
@@ -89,8 +66,15 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
 
     const handleClose = () => {
         setErrors({});
-        setEditPassword(false);
         setOpen(false);
+        setForm({
+            name: '',
+            email: '',
+            role: '',
+            status: '',
+            password: '',
+            password_confirmation: '',
+        });
     };
 
     return (
@@ -101,19 +85,19 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                 if (!isOpen) handleClose();
             }}
         >
-            <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
-                    <Pen className="size-3" />
-                    <span className="sr-only">Tombol edit pengguna</span>
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-                <form>
+            <form>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                        <PlusIcon />
+                        <span className="hidden lg:inline">Tambah Pengguna</span>
+                        <span className="lg:hidden">Pengguna</span>
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Edit Pengguna</DialogTitle>
-                        <DialogDescription>Edit data pengguna disini. Klik simpan ketika selesai.</DialogDescription>
+                        <DialogTitle>Tambah Pengguna</DialogTitle>
+                        <DialogDescription>Tambah data pengguna disini. Klik simpan ketika selesai.</DialogDescription>
                     </DialogHeader>
-
                     <div className="grid gap-4 py-4">
                         {Object.keys(errors).length > 0 && (
                             <Alert variant="destructive" role="alert">
@@ -154,7 +138,46 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
 
                         <div className="grid gap-2">
                             <Label htmlFor="role">Peran</Label>
+                            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
+                                <SelectTrigger id="role" className="w-full">
+                                    <SelectValue placeholder="Pilih peran pengguna" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="super admin">Super Admin</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
                             {/* <select
+                                id="role"
+                                name="role"
+                                value={form.role}
+                                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                                className={cn(
+                                    "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+                                )}
+                            >
+                                <option value="">Pilih peran pengguna</option>
+                                <option value="super admin">Super Admin</option>
+                                <option value="admin">Admin</option>
+                            </select> */}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Status</Label>
+                            <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
+                                <SelectTrigger id="status" className="w-full">
+                                    <SelectValue placeholder="Pilih status pengguna" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="aktif">Aktif</SelectItem>
+                                    <SelectItem value="nonaktif">Nonaktif</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* <div className="grid gap-2">
+                            <Label htmlFor="role">Peran</Label>
+                            <select
                                 id="role"
                                 name="role"
                                 value={form.role}
@@ -164,24 +187,12 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                                 <option value="">Pilih peran pengguna</option>
                                 <option value="super admin">Super Admin</option>
                                 <option value="admin">Admin</option>
-                            </select> */}
-                            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Pilih peran pengguna" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Peran</SelectLabel>
-                                        <SelectItem value="super admin">Super Admin</SelectItem>
-                                        <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            </select>
+                        </div> */}
 
-                        <div className="grid gap-2">
+                        {/* <div className="grid gap-2">
                             <Label htmlFor="status">Status</Label>
-                            {/* <select
+                            <select
                                 id="status"
                                 name="status"
                                 value={form.status}
@@ -191,58 +202,31 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                                 <option value="">Pilih status pengguna</option>
                                 <option value="aktif">Aktif</option>
                                 <option value="nonaktif">Nonaktif</option>
-                            </select> */}
-                            <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Pilih status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectLabel>Status</SelectLabel>
-                                        <SelectItem value="aktif">Aktif</SelectItem>
-                                        <SelectItem value="nonaktif">Nonaktif</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            </select>
+                        </div> */}
 
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="edit-password"
-                                className="accent-primary"
-                                checked={editPassword}
-                                onChange={(e) => setEditPassword(e.target.checked)}
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">Password Baru</Label>
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                placeholder="Masukkan password baru"
                             />
-                            <Label htmlFor="edit-password">Edit Password</Label>
                         </div>
-
-                        {editPassword && (
-                            <>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="password">Password Baru</Label>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        value={form.password}
-                                        onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                        placeholder="Masukkan password baru"
-                                    />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
-                                    <Input
-                                        id="password_confirmation"
-                                        name="password_confirmation"
-                                        type="password"
-                                        value={form.password_confirmation}
-                                        onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })}
-                                        placeholder="Ulangi password baru"
-                                    />
-                                </div>
-                            </>
-                        )}
+                        <div className="grid gap-2">
+                            <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
+                            <Input
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                type="password"
+                                value={form.password_confirmation}
+                                onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })}
+                                placeholder="Ulangi password baru"
+                            />
+                        </div>
                     </div>
 
                     <DialogFooter>
@@ -251,7 +235,7 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                                 Batal
                             </Button>
                         </DialogClose>
-                        <Button type="submit" onClick={handleEdit} disabled={isSubmitting}>
+                        <Button type="submit" onClick={handleInsert} disabled={isSubmitting}>
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -262,8 +246,8 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                             )}
                         </Button>
                     </DialogFooter>
-                </form>
-            </DialogContent>
+                </DialogContent>
+            </form>
         </Dialog>
     );
 }

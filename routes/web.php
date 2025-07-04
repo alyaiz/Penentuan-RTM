@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\RtmController;
 use App\Http\Controllers\Admin\KriteriaController;
 use App\Http\Controllers\Admin\HasilController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\RtmController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -17,7 +17,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::resource('users', UserController::class);
+    Route::resource('pengguna', UserController::class);
+    Route::resource('rumah-tangga-miskin', RtmController::class);
 });
 
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {

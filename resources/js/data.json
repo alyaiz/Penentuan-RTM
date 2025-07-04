@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "name": "Kontrak",
+        "type": "status_kepemilikan_rumah'",
+        "bobot": 0.5
+    },
+    {
+        "id": 2,
+        "name": "Milik Sendiri",
+        "type": "status_kepemilikan_rumah'",
+        "bobot": 0.5
+    },
+    {
+        "id": 3,
+        "name": "Milik Orang Tua",
+        "type": "status_kepemilikan_rumah'",
+        "bobot": 0.5
+    },
+    {
+        "id": 4,
+        "name": "....",
+        "type": "penghasilan",
+        "bobot": 0.5
+    },
+    {
+        "id": 5,
+        "name": "....",
+        "type": "pengeluaran",
+        "bobot": 0.5
+    }
+]

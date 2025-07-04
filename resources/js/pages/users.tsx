@@ -11,12 +11,12 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: 'Users',
-        href: '/dashboard/users',
+        title: 'Pengguna',
+        href: '/users',
     },
 ];
 
-export default function Dashboard() {
+export default function Users() {
     const { props } = usePage<{ users: Paginator<User> }>();
     const { data, current_page, last_page, per_page, total } = props.users;
     const [pageIndex, setPageIndex] = useState(current_page - 1);
@@ -27,7 +27,7 @@ export default function Dashboard() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Dashboard" />
+            <Head title="Pengguna" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Heading title="Manajemen Pengguna" description="Kelola data pengguna, ubah informasi akun, atau tambahkan pengguna baru." />
                 <DataTableUsers

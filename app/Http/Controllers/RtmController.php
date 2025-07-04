@@ -1,59 +1,44 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\RumahTanggaMiskin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class RtmController extends Controller
 {
     public function index()
     {
-        $data = RumahTanggaMiskin::where('admin_id', Auth::id())->get();
-        return view('admin.rtm.index', compact('data'));
+        return Inertia::render('rtm/rtm');
     }
 
     public function create()
     {
-        return view('admin.rtm.create');
+        return Inertia::render('rtm/create');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nik' => 'required',
-            'nama' => 'required',
-        ]);
-
-        $validated['admin_id'] = Auth::id();
-
-        RumahTanggaMiskin::create($validated);
-
-        return redirect()->route('admin.rtm.index')->with('success', 'Data berhasil ditambahkan.');
+        //
     }
 
-    public function edit(RumahTanggaMiskin $rtm)
+    public function show(string $id)
     {
-        return view('admin.rtm.edit', compact('rtm'));
+        //
     }
 
-    public function update(Request $request, RumahTanggaMiskin $rtm)
+    public function edit(string $id)
     {
-        $validated = $request->validate([
-            'nik' => 'required',
-            'nama' => 'required',
-        ]);
-
-        $rtm->update($validated);
-
-        return redirect()->route('admin.rtm.index')->with('success', 'Data berhasil diupdate.');
+        return Inertia::render('rtm/edit');
     }
 
-    public function destroy(RumahTanggaMiskin $rtm)
+    public function update(Request $request, string $id)
     {
-        $rtm->delete();
-        return back()->with('success', 'Data berhasil dihapus.');
+        //
+    }
+
+    public function destroy(string $id)
+    {
+        //
     }
 }

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Kriteria extends Model
+class Criteria extends Model
 {
-    protected $guarded = [];
+    //
 }
