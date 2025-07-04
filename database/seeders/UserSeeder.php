@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
                 'name' => 'Kevin Iansyah',
                 'email' => 'keviniansyah04@gmail.com',
                 'password' => Hash::make('password'),
-                'role' => 'super admin',
+                'role' => 'super_admin',
                 'status' => 'aktif',
             ],
             [

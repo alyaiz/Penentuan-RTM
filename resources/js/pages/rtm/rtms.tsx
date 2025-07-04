@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Rtm() {
+export default function Rtms() {
     // const { props } = usePage<{ users: Paginator<User> }>();
     // const { data, current_page, last_page, per_page, total } = props.users;
     // const [pageIndex, setPageIndex] = useState(current_page - 1);

@@ -9,7 +9,7 @@ class RtmController extends Controller
 {
     public function index()
     {
-        return Inertia::render('rtm/rtm');
+        return Inertia::render('rtm/rtms');
     }
 
     public function create()

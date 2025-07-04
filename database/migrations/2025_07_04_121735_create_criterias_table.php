@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->enum('type', ['penghasilan', 'pengeluaran', 'tempat_tinggal', 'status_kepemilikan_rumah', 'kondisi_rumah', 'aset_yang_dimiliki', 'transportasi', 'penerangan_rumah']);
-            $table->float('bobot');
+            $table->float('weight');
+            $table->float('scale');
             $table->timestamps();
         });
     }

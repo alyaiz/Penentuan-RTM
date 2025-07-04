@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\KriteriaController;
 use App\Http\Controllers\Admin\HasilController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\RtmController;
 use App\Http\Controllers\UserController;
 
@@ -19,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('pengguna', UserController::class);
     Route::resource('rumah-tangga-miskin', RtmController::class);
+    Route::resource('kriteria', CriteriaController::class);
 });
 
 Route::middleware(['auth', 'is_admin'])->prefix('admin')->name('admin.')->group(function () {

@@ -59,7 +59,10 @@ export interface Paginator<T> {
     last_page_url: string;
 }
 
-type DeleteErrorResponse = {
-    message?: string;
-    suggestion?: string;
-};
+export interface Criteria {
+    id: number;
+    name: string;
+    type: string;
+    weight: number;
+    scale: number;
+}

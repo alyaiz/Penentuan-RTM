@@ -1,14 +1,10 @@
 import CreateUserDialog from '@/components/create-user-dialog';
-import DeleteUserDialog from '@/components/delete-user-dialog';
-import EditUserDialog from '@/components/edit-user-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User } from '@/types';
+import { Criteria } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import {
     ColumnDef,
@@ -23,33 +19,19 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import {
-    CheckCircle2,
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ChevronsLeftIcon,
-    ChevronsRightIcon,
-    CircleX,
-    ColumnsIcon,
-    UserRoundCheck,
-} from 'lucide-react';
+import { ChevronDownIcon, ColumnsIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 
 type DataTableProps = {
-    data: User[];
-    pageIndex: number;
-    setPageIndex: React.Dispatch<React.SetStateAction<number>>;
-    totalPages: number;
+    data: Criteria[];
     totalItems: number;
-    perPage: number;
     initialFilters?: {
         search?: string;
     };
 };
 
-export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPages, totalItems, perPage, initialFilters = {} }: DataTableProps) {
+export default function DataTableCriterias({ data, totalItems, initialFilters = {} }: DataTableProps) {
     const getSearchFromUrl = () => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
@@ -72,90 +54,72 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         setSearchValue(newSearchValue);
     }, [initialFilters.search]);
 
-    const columns: ColumnDef<User>[] = useMemo(
+    const columns: ColumnDef<Criteria>[] = useMemo(
         () => [
             {
                 id: 'rowNumber',
                 header: 'No',
-                cell: ({ row }) => <div className="text-foreground text-left">{row.index + 1}</div>,
+                cell: ({ row }) => {
+                    return <div className="text-foreground text-left">{row.index + 1}</div>;
+                },
                 enableHiding: false,
             },
             {
-                accessorKey: 'name',
-                header: 'Nama',
+                accessorKey: 'kualifikasi',
+                header: 'Kualifikasi',
                 cell: ({ row }) => {
                     return <div className="text-foreground text-left">{row.original.name}</div>;
                 },
                 enableHiding: false,
             },
             {
-                accessorKey: 'email',
-                header: 'Email',
+                accessorKey: 'kriteria',
+                header: 'Kriteria',
                 cell: ({ row }) => {
-                    return <div className="text-foreground text-left">{row.original.email}</div>;
+                    const typeMap: Record<string, string> = {
+                        penghasilan: 'Penghasilan',
+                        pengeluaran: 'Pengeluaran',
+                        tempat_tinggal: 'Tempat Tinggal',
+                        status_kepemilikan_rumah: 'Status Kepemilikan Rumah',
+                        kondisi_rumah: 'Kondisi Rumah',
+                        aset_yang_dimiliki: 'Aset yang Dimiliki',
+                        transportasi: 'Transportasi',
+                        penerangan_rumah: 'Penerangan Rumah',
+                    };
+
+                    const colorMap: Record<string, string> = {
+                        penghasilan: 'var(--chart-1)',
+                        pengeluaran: 'var(--chart-2)',
+                        tempat_tinggal: 'var(--chart-3)',
+                        status_kepemilikan_rumah: 'var(--chart-4)',
+                        kondisi_rumah: 'var(--chart-5)',
+                        aset_yang_dimiliki: 'var(--chart-1)',
+                        transportasi: 'var(--chart-2)',
+                        penerangan_rumah: 'var(--chart-3)',
+                    };
+
+                    const type = row.original.type;
+
+                    return (
+                        <Badge className="flex gap-1 px-1.5 text-white [&_svg]:size-3" style={{ backgroundColor: colorMap[type] || 'gray' }}>
+                            {typeMap[type] || type}
+                        </Badge>
+                    );
                 },
             },
             {
-                accessorKey: 'peran',
-                header: 'Peran',
-                cell: ({ row }) => (
-                    <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['super_admin', 'admin'].includes(row.original.role) ? 'text-black' : 'text-white'
-                        }`}
-                        style={{
-                            backgroundColor:
-                                row.original.role === 'super_admin' ? 'var(--chart-1)' : row.original.role === 'admin' ? 'var(--chart-3)' : undefined,
-                        }}
-                    >
-                        {row.original.role === 'super_admin' && <UserRoundCheck className="text-black" />}
-                        {row.original.role === 'admin' && <UserRoundCheck className="text-black" />}
-                        {
-                            {
-                                super_admin: 'Super Admin',
-                                admin: 'Admin',
-                            }[row.original.role]
-                        }
-                    </Badge>
-                ),
+                accessorKey: 'bobot',
+                header: 'Bobot',
+                cell: ({ row }) => {
+                    return <div className="text-foreground text-left">{row.original.weight}</div>;
+                },
             },
             {
-                accessorKey: 'status',
-                header: 'Status',
-                cell: ({ row }) => (
-                    <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['aktif', 'nonaktif'].includes(row.original.status) ? 'text-black' : 'text-white'
-                        }`}
-                        style={{
-                            backgroundColor:
-                                row.original.status === 'aktif'
-                                    ? 'var(--chart-1)'
-                                    : row.original.status === 'nonaktif'
-                                      ? 'var(--chart-3)'
-                                      : undefined,
-                        }}
-                    >
-                        {row.original.status === 'aktif' && <CheckCircle2 className="text-black" />}
-                        {row.original.status === 'nonaktif' && <CircleX className="text-black" />}
-                        {
-                            {
-                                aktif: 'Aktif',
-                                nonaktif: 'Nonaktif',
-                            }[row.original.status]
-                        }
-                    </Badge>
-                ),
-            },
-            {
-                id: 'actions',
-                header: 'Aksi',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-2">
-                        <EditUserDialog user={row.original} />
-                        <DeleteUserDialog user={row.original} />
-                    </div>
-                ),
+                accessorKey: 'skala',
+                header: 'Skala',
+                cell: ({ row }) => {
+                    return <div className="text-foreground text-left">{row.original.scale}</div>;
+                },
             },
         ],
         [url],
@@ -178,45 +142,14 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
     const debouncedSearch = useDebouncedCallback((searchTerm: string) => {
         const url = buildUrlWithParams({
             search: searchTerm || undefined,
-            page: 1,
         });
 
         router.visit(url, {
             preserveState: true,
             preserveScroll: true,
-            only: ['users'],
+            only: ['criterias'],
         });
     }, 500);
-
-    const goToPage = (page: number) => {
-        const newPage = Math.max(0, Math.min(page, totalPages - 1));
-        setPageIndex(newPage);
-
-        const url = buildUrlWithParams({
-            page: newPage + 1,
-            search: getSearchFromUrl(),
-        });
-        router.visit(url, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['users'],
-        });
-    };
-
-    const changePageSize = (newPerPage: number) => {
-        const currentSearch = getSearchFromUrl();
-        const url = buildUrlWithParams({
-            per_page: newPerPage,
-            page: 1,
-            search: currentSearch || undefined,
-        });
-
-        router.visit(url, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['users'],
-        });
-    };
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -231,13 +164,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
             sorting,
             columnVisibility,
             columnFilters,
-            pagination: {
-                pageIndex,
-                pageSize: perPage,
-            },
         },
-        pageCount: totalPages,
-        manualPagination: true,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
         onColumnVisibilityChange: setColumnVisibility,
@@ -247,9 +174,6 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
     });
-
-    const canPreviousPage = pageIndex > 0;
-    const canNextPage = pageIndex < totalPages - 1;
 
     return (
         <>
@@ -291,7 +215,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                         </div>
 
                         <Input
-                            placeholder="Cari nama, peran, atau status..."
+                            placeholder="Cari kualifikasi atau kriteria..."
                             value={searchValue}
                             onChange={handleSearchChange}
                             className="max-w-sm md:order-1"
@@ -335,72 +259,8 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
 
                     <div className="flex items-center justify-between px-4">
                         <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-                            Menampilkan {Math.min(pageIndex * perPage + 1, totalItems)} sampai {Math.min((pageIndex + 1) * perPage, totalItems)} dari{' '}
-                            {totalItems} hasil
+                            Menampilkan {totalItems} hasil
                             {searchValue && <span className="ml-1">untuk "{searchValue}"</span>}
-                        </div>
-                        <div className="flex w-full items-center gap-8 lg:w-fit">
-                            <div className="hidden items-center gap-2 lg:flex">
-                                <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                                    Baris per halaman
-                                </Label>
-                                <Select value={`${perPage}`} onValueChange={(value) => changePageSize(Number(value))}>
-                                    <SelectTrigger className="w-20" id="rows-per-page">
-                                        <SelectValue placeholder={perPage} />
-                                    </SelectTrigger>
-                                    <SelectContent side="top">
-                                        {[10, 20, 30, 40, 50].map((pageSize) => (
-                                            <SelectItem key={pageSize} value={`${pageSize}`}>
-                                                {pageSize}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="flex w-fit items-center justify-center text-sm font-medium">
-                                Halaman {pageIndex + 1} dari {totalPages}
-                            </div>
-                            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-                                <Button
-                                    variant="outline"
-                                    className="hidden h-8 w-8 p-0 lg:flex"
-                                    onClick={() => goToPage(0)}
-                                    disabled={!canPreviousPage}
-                                >
-                                    <span className="sr-only">Go to first page</span>
-                                    <ChevronsLeftIcon />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="size-8"
-                                    size="icon"
-                                    onClick={() => goToPage(pageIndex - 1)}
-                                    disabled={!canPreviousPage}
-                                >
-                                    <span className="sr-only">Go to previous page</span>
-                                    <ChevronLeftIcon />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="size-8"
-                                    size="icon"
-                                    onClick={() => goToPage(pageIndex + 1)}
-                                    disabled={!canNextPage}
-                                >
-                                    <span className="sr-only">Go to next page</span>
-                                    <ChevronRightIcon />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="hidden size-8 lg:flex"
-                                    size="icon"
-                                    onClick={() => goToPage(totalPages - 1)}
-                                    disabled={!canNextPage}
-                                >
-                                    <span className="sr-only">Go to last page</span>
-                                    <ChevronsRightIcon />
-                                </Button>
-                            </div>
                         </div>
                     </div>
                 </div>
