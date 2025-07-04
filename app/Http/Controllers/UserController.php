@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class UserController extends Controller
+{
+    public function index(Request $request)
+    {
+        $perPage = $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 30, 40, 50]) ? $perPage : 10;
+
+        $search = $request->get('search');
+
+        $query = User::query();
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('role', 'like', '%' . $search . '%')
+                    ->orWhere('status', 'like', '%' . $search . '%');
+            });
+        }
+
+        $users = $query->latest()->paginate($perPage);
+
+        $users->appends($request->query());
+
+        return Inertia::render('users', [
+            'users' => $users,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
+    }
+
+    public function create()
+    {
+        //
+    }
+
+    public function store(Request $request)
+    {
+        //
+    }
+
+    public function show(string $id)
+    {
+        //
+    }
+
+    public function edit(string $id)
+    {
+        //
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'role' => ['required', 'in:super admin,admin'],
+            'status' => ['required', 'in:aktif,nonaktif'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return redirect()->back()->with('success', 'Data pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(string $id)
+    {
+        //
+    }
+}
