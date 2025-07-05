@@ -1,15 +1,11 @@
-import CreateUserDialog from '@/components/create-user-dialog';
-import DeleteUserDialog from '@/components/delete-user-dialog';
-import EditUserDialog from '@/components/edit-user-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User } from '@/types';
-import { router, usePage } from '@inertiajs/react';
+import { Rtm } from '@/types';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -24,21 +20,22 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import {
-    CheckCircle2,
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
     ChevronsLeftIcon,
     ChevronsRightIcon,
-    CircleX,
     ColumnsIcon,
-    UserRoundCheck,
+    Pen,
+    PlusIcon,
+    Trash,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { RtmCellViewer } from './rtm-cell-viewer';
 
 type DataTableProps = {
-    data: User[];
+    data: Rtm[];
     pageIndex: number;
     setPageIndex: React.Dispatch<React.SetStateAction<number>>;
     totalPages: number;
@@ -49,7 +46,7 @@ type DataTableProps = {
     };
 };
 
-export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPages, totalItems, perPage, initialFilters = {} }: DataTableProps) {
+export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPages, totalItems, perPage, initialFilters = {} }: DataTableProps) {
     const getSearchFromUrl = () => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
@@ -72,7 +69,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         setSearchValue(newSearchValue);
     }, [initialFilters.search]);
 
-    const columns: ColumnDef<User>[] = useMemo(
+    const columns: ColumnDef<Rtm>[] = useMemo(
         () => [
             {
                 id: 'rowNumber',
@@ -84,76 +81,39 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                 accessorKey: 'nama',
                 header: 'Nama',
                 cell: ({ row }) => {
-                    return <div className="text-foreground text-left">{row.original.name}</div>;
+                    return <RtmCellViewer item={row.original} />;
                 },
                 enableHiding: false,
             },
             {
-                accessorKey: 'email',
-                header: 'Email',
+                accessorKey: 'nik',
+                header: 'NIK',
                 cell: ({ row }) => {
-                    return <div className="text-foreground text-left">{row.original.email}</div>;
+                    return <div className="text-foreground text-left">{row.original.nik}</div>;
                 },
             },
             {
-                accessorKey: 'peran',
-                header: 'Peran',
-                cell: ({ row }) => (
-                    <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['super_admin', 'admin'].includes(row.original.role) ? 'text-black' : 'text-white'
-                        }`}
-                        style={{
-                            backgroundColor:
-                                row.original.role === 'super_admin' ? 'var(--chart-1)' : row.original.role === 'admin' ? 'var(--chart-3)' : undefined,
-                        }}
-                    >
-                        {row.original.role === 'super_admin' && <UserRoundCheck className="text-black" />}
-                        {row.original.role === 'admin' && <UserRoundCheck className="text-black" />}
-                        {
-                            {
-                                super_admin: 'Super Admin',
-                                admin: 'Admin',
-                            }[row.original.role]
-                        }
-                    </Badge>
-                ),
-            },
-            {
-                accessorKey: 'status',
-                header: 'Status',
-                cell: ({ row }) => (
-                    <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['aktif', 'nonaktif'].includes(row.original.status) ? 'text-black' : 'text-white'
-                        }`}
-                        style={{
-                            backgroundColor:
-                                row.original.status === 'aktif'
-                                    ? 'var(--chart-1)'
-                                    : row.original.status === 'nonaktif'
-                                      ? 'var(--chart-3)'
-                                      : undefined,
-                        }}
-                    >
-                        {row.original.status === 'aktif' && <CheckCircle2 className="text-black" />}
-                        {row.original.status === 'nonaktif' && <CircleX className="text-black" />}
-                        {
-                            {
-                                aktif: 'Aktif',
-                                nonaktif: 'Nonaktif',
-                            }[row.original.status]
-                        }
-                    </Badge>
-                ),
+                accessorKey: 'alamat',
+                header: 'Alamat',
+                cell: ({ row }) => {
+                    return <div className="text-foreground text-left">{row.original.address ? row.original.address : '-'}</div>;
+                },
             },
             {
                 id: 'actions',
                 header: 'Aksi',
                 cell: ({ row }) => (
                     <div className="flex items-center gap-2">
-                        <EditUserDialog user={row.original} />
-                        <DeleteUserDialog user={row.original} />
+                        <Button variant="outline" size="icon" className="h-7 w-7 rounded-md" asChild>
+                            <Link href={`/rumah-tangga-miskin/${row.original.id}/edit`}>
+                                <Pen className="size-3" />
+                                <span className="sr-only">Tombol edit rumah tangga miskin</span>
+                            </Link>
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
+                            <Trash className="size-3" />
+                            <span className="sr-only">Tombol hapus rumah tangga miskin</span>
+                        </Button>
                     </div>
                 ),
             },
@@ -184,7 +144,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         router.visit(url, {
             preserveState: true,
             preserveScroll: true,
-            only: ['users'],
+            only: ['rtms'],
         });
     }, 500);
 
@@ -199,7 +159,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         router.visit(url, {
             preserveState: true,
             preserveScroll: true,
-            only: ['users'],
+            only: ['rtms'],
         });
     };
 
@@ -214,7 +174,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
         router.visit(url, {
             preserveState: true,
             preserveScroll: true,
-            only: ['users'],
+            only: ['rtms'],
         });
     };
 
@@ -286,12 +246,18 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                             </div>
 
                             <div className="flex-1 md:flex-none">
-                                <CreateUserDialog />
+                                <Button variant="outline" className="w-full" asChild>
+                                    <Link href="/rumah-tangga-miskin/create">
+                                        <PlusIcon />
+                                        <span className="hidden lg:inline">Tambah Data</span>
+                                        <span className="lg:hidden">Data</span>
+                                    </Link>
+                                </Button>
                             </div>
                         </div>
 
                         <Input
-                            placeholder="Cari nama, peran, atau status..."
+                            placeholder="Cari nama, nik, atau alamat..."
                             value={searchValue}
                             onChange={handleSearchChange}
                             className="max-w-sm md:order-1"

@@ -12,8 +12,8 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $perPage = in_array($perPage, [10, 20, 30, 40, 50]) ? $perPage : 10;
+        $perPage = $request->get('per_page', 20);
+        $perPage = in_array($perPage, [20, 30, 40, 50]) ? $perPage : 10;
 
         $search = $request->get('search');
 

@@ -168,7 +168,7 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                                 className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <option value="">Pilih peran pengguna</option>
-                                <option value="super admin">Super Admin</option>
+                                <option value="super_admin">Super Admin</option>
                                 <option value="admin">Admin</option>
                             </select> */}
                             <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
@@ -178,7 +178,7 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                                 <SelectContent>
                                     <SelectGroup>
                                         <SelectLabel>Peran</SelectLabel>
-                                        <SelectItem value="super admin">Super Admin</SelectItem>
+                                        <SelectItem value="super_admin">Super Admin</SelectItem>
                                         <SelectItem value="admin">Admin</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>

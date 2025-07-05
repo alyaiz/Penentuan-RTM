@@ -32,8 +32,7 @@ export default function CreateUserDialog() {
         password_confirmation: '',
     });
 
-    const handleInsert = () => {
-        console.log('Form data dikirim:', form);
+    const handleCreate = () => {
         setIsSubmitting(true);
 
         router.post('/pengguna', form, {
@@ -241,7 +240,7 @@ export default function CreateUserDialog() {
                                 Batal
                             </Button>
                         </DialogClose>
-                        <Button type="submit" onClick={handleInsert} disabled={isSubmitting}>
+                        <Button type="submit" onClick={handleCreate} disabled={isSubmitting}>
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

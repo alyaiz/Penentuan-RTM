@@ -1,7 +1,9 @@
+import DataTableRtms from '@/components/datatable-rtms';
 import Heading from '@/components/heading';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Paginator, Rtm, type BreadcrumbItem } from '@/types';
+import { Head, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,13 +17,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Rtms() {
-    // const { props } = usePage<{ users: Paginator<User> }>();
-    // const { data, current_page, last_page, per_page, total } = props.users;
-    // const [pageIndex, setPageIndex] = useState(current_page - 1);
+    const { props } = usePage<{ rtms: Paginator<Rtm> }>();
+    const { data, current_page, last_page, per_page, total } = props.rtms;
+    const [pageIndex, setPageIndex] = useState(current_page - 1);
 
-    // useEffect(() => {
-    //     setPageIndex(current_page - 1);
-    // }, [current_page]);
+    useEffect(() => {
+        setPageIndex(current_page - 1);
+    }, [current_page]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -31,14 +33,14 @@ export default function Rtms() {
                     title="Manajemen Rumah Tangga Miskin"
                     description="Kelola data rumah tangga miskin, ubah informasi, atau tambahkan data baru."
                 />
-                {/* <DataTableUsers
+                <DataTableRtms
                     data={data}
                     pageIndex={pageIndex}
                     setPageIndex={setPageIndex}
                     totalPages={last_page}
                     totalItems={total}
                     perPage={per_page}
-                /> */}
+                />
             </div>
         </AppLayout>
     );

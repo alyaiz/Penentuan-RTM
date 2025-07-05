@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->string('nik')->unique();
-            $table->string('nama');
-            $table->text('string')->nullable();
+            $table->string('name');
+            $table->text('address')->nullable();
             $table->foreignId('penghasilan_id')->references('id')->on('criterias');
             $table->foreignId('pengeluaran_id')->references('id')->on('criterias');
             $table->foreignId('tempat_tinggal_id')->references('id')->on('criterias');

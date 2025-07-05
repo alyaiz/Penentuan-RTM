@@ -11,7 +11,7 @@ class Rtm extends Model
 
     protected $fillable = [
         'user_id',
-        'nama',
+        'name',
         'nik',
         'alamat',
         'penghasilan_id',

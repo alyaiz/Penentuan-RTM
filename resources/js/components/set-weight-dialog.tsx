@@ -58,7 +58,8 @@ export default function SetWeightDialog() {
 
             const data = await response.json();
 
-            if (!data.weights) {
+            if (!data.weights || Object.keys(data.weights).length === 0) {
+                setOpen(false);
                 throw new Error('emptyWeights');
             }
 
@@ -75,8 +76,8 @@ export default function SetWeightDialog() {
             }
 
             if (message === 'emptyWeights') {
-                toast.warning('Belum Ada Data Bobot', {
-                    description: 'Data bobot kriteria belum tersedia. Silakan tambahkan terlebih dahulu.',
+                toast.warning('Belum Ada Data Kriteria', {
+                    description: 'Data kriteria belum tersedia. Silakan tambahkan terlebih dahulu.',
                 });
             } else {
                 toast.error('Gagal Memuat Bobot', {
