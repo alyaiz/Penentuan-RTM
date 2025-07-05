@@ -1,4 +1,3 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,18 +11,16 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { router } from '@inertiajs/react';
-import { AlertCircleIcon, Loader2, PlusIcon } from 'lucide-react';
-import { useState } from 'react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from '@inertiajs/react';
+import { Loader2, PlusIcon } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function CreateUserDialog() {
     const [open, setOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string[]>>({});
 
-    const [form, setForm] = useState({
+    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         name: '',
         email: '',
         role: '',
@@ -32,55 +29,70 @@ export default function CreateUserDialog() {
         password_confirmation: '',
     });
 
-    const handleCreate = () => {
-        setIsSubmitting(true);
+    const handleCreate: FormEventHandler = (e) => {
+        e.preventDefault();
 
-        router.post('/pengguna', form, {
+        post('/pengguna', {
             onSuccess: () => {
-                toast.success('Berhasil Ditambahkan', {
+                toast.success('Berhasil Disimpan', {
                     description: 'Data pengguna baru berhasil disimpan.',
                 });
-
-                setErrors({});
                 setOpen(false);
             },
-            onError: (err) => {
-                const formattedErrors: Record<string, string[]> = {};
-
-                Object.entries(err).forEach(([key, message]) => {
-                    if (typeof message === 'string') {
-                        formattedErrors[key] = [message];
-                    } else if (Array.isArray(message)) {
-                        formattedErrors[key] = message;
-                    }
+            onError: () => {
+                toast.error('Gagal Disimpan', {
+                    description: 'Mohon periksa kembali data yang dimasukkan.',
                 });
-
-                setErrors(formattedErrors);
-
-                if (Object.keys(formattedErrors).length === 0) {
-                    toast.error('Gagal Diperbarui', {
-                        description: 'Terjadi kesalahan saat menyimpan data pengguna.',
-                    });
-                }
-            },
-            onFinish: () => {
-                setIsSubmitting(false);
             },
         });
     };
 
     const handleClose = () => {
-        setErrors({});
+        reset();
+        clearErrors();
         setOpen(false);
-        setForm({
-            name: '',
-            email: '',
-            role: '',
-            status: '',
-            password: '',
-            password_confirmation: '',
-        });
     };
+
+    const renderInputField = (label: string, field: keyof typeof data, placeholder: string, type: string = 'text') => (
+        <div className="grid gap-2">
+            <Label htmlFor={field}>
+                {label}
+                <span className="text-primary"> *</span>
+            </Label>
+            <Input id={field} type={type} placeholder={placeholder} value={data[field] as string} onChange={(e) => setData(field, e.target.value)} />
+            {errors[field] && <p className="text-destructive text-sm">{errors[field]}</p>}
+        </div>
+    );
+
+    const renderSelectField = (
+        label: string,
+        field: keyof typeof data,
+        options: { value: string; label: string }[],
+        placeholder = `Pilih ${label}`,
+    ) => (
+        <div className="grid gap-2">
+            <Label htmlFor={field}>
+                {label}
+                <span className="text-primary"> *</span>
+            </Label>
+            <Select value={data[field]} onValueChange={(value) => setData(field, value)}>
+                <SelectTrigger className="w-full" id={field}>
+                    <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>{label}</SelectLabel>
+                        {options.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+            {errors[field] && <p className="text-destructive text-sm">{errors[field]}</p>}
+        </div>
+    );
 
     return (
         <Dialog
@@ -90,148 +102,35 @@ export default function CreateUserDialog() {
                 if (!isOpen) handleClose();
             }}
         >
-            <form>
-                <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                        <PlusIcon />
-                        <span className="hidden lg:inline">Tambah Pengguna</span>
-                        <span className="lg:hidden">Pengguna</span>
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+            <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                    <PlusIcon />
+                    <span className="hidden lg:inline">Tambah Pengguna</span>
+                    <span className="lg:hidden">Pengguna</span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleCreate}>
                     <DialogHeader>
                         <DialogTitle>Tambah Pengguna</DialogTitle>
                         <DialogDescription>Tambah data pengguna disini. Klik simpan ketika selesai.</DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        {Object.keys(errors).length > 0 && (
-                            <Alert variant="destructive" role="alert">
-                                <AlertCircleIcon className="h-4 w-4" />
-                                <AlertTitle>Gagal menyimpan data pengguna</AlertTitle>
-                                <AlertDescription>
-                                    <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
-                                        {Object.entries(errors).map(([field, messages]) =>
-                                            messages.map((message, idx) => <li key={`${field}-${idx}`}>{message}</li>),
-                                        )}
-                                    </ul>
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                    <div className="my-4 grid min-h-[50vh] gap-4 overflow-y-auto md:h-[40vh] lg:h-[45vh] xl:max-h-[65vh] xl:min-h-[55vh]">
+                        {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
+                        {renderInputField('Email', 'email', 'Masukkan email pengguna', 'email')}
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Nama</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                placeholder="Masukkan nama pengguna"
-                            />
-                        </div>
+                        {renderSelectField('Peran', 'role', [
+                            { value: 'super_admin', label: 'Super Admin' },
+                            { value: 'admin', label: 'Admin' },
+                        ])}
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={form.email}
-                                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                placeholder="Masukkan email pengguna"
-                            />
-                        </div>
+                        {renderSelectField('Status', 'status', [
+                            { value: 'aktif', label: 'Aktif' },
+                            { value: 'nonaktif', label: 'Nonaktif' },
+                        ])}
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="role">Peran</Label>
-                            <Select value={form.role} onValueChange={(value) => setForm({ ...form, role: value })}>
-                                <SelectTrigger id="role" className="w-full">
-                                    <SelectValue placeholder="Pilih peran pengguna" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="super admin">Super Admin</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {/* <select
-                                id="role"
-                                name="role"
-                                value={form.role}
-                                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                                className={cn(
-                                    "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
-                                )}
-                            >
-                                <option value="">Pilih peran pengguna</option>
-                                <option value="super admin">Super Admin</option>
-                                <option value="admin">Admin</option>
-                            </select> */}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="status">Status</Label>
-                            <Select value={form.status} onValueChange={(value) => setForm({ ...form, status: value })}>
-                                <SelectTrigger id="status" className="w-full">
-                                    <SelectValue placeholder="Pilih status pengguna" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="aktif">Aktif</SelectItem>
-                                    <SelectItem value="nonaktif">Nonaktif</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* <div className="grid gap-2">
-                            <Label htmlFor="role">Peran</Label>
-                            <select
-                                id="role"
-                                name="role"
-                                value={form.role}
-                                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                                className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option value="">Pilih peran pengguna</option>
-                                <option value="super admin">Super Admin</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div> */}
-
-                        {/* <div className="grid gap-2">
-                            <Label htmlFor="status">Status</Label>
-                            <select
-                                id="status"
-                                name="status"
-                                value={form.status}
-                                onChange={(e) => setForm({ ...form, status: e.target.value })}
-                                className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex h-9 w-full items-center justify-between rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option value="">Pilih status pengguna</option>
-                                <option value="aktif">Aktif</option>
-                                <option value="nonaktif">Nonaktif</option>
-                            </select>
-                        </div> */}
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Password Baru</Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                value={form.password}
-                                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                placeholder="Masukkan password baru"
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password_confirmation">Konfirmasi Password</Label>
-                            <Input
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                type="password"
-                                value={form.password_confirmation}
-                                onChange={(e) => setForm({ ...form, password_confirmation: e.target.value })}
-                                placeholder="Ulangi password baru"
-                            />
-                        </div>
+                        {renderInputField('Password Baru', 'password', 'Masukkan password baru', 'password')}
+                        {renderInputField('Konfirmasi Password', 'password_confirmation', 'Ulangi password baru', 'password')}
                     </div>
 
                     <DialogFooter>
@@ -240,8 +139,8 @@ export default function CreateUserDialog() {
                                 Batal
                             </Button>
                         </DialogClose>
-                        <Button type="submit" onClick={handleCreate} disabled={isSubmitting}>
-                            {isSubmitting ? (
+                        <Button type="submit" disabled={processing}>
+                            {processing ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Menyimpan...
@@ -251,8 +150,8 @@ export default function CreateUserDialog() {
                             )}
                         </Button>
                     </DialogFooter>
-                </DialogContent>
-            </form>
+                </form>
+            </DialogContent>
         </Dialog>
     );
 }

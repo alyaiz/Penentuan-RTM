@@ -49,7 +49,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'role' => ['required', 'in:super admin,admin'],
+            'role' => ['required', 'in:super_admin,admin'],
             'status' => ['required', 'in:aktif,nonaktif'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -78,7 +78,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'role' => ['required', 'in:super admin,admin'],
+            'role' => ['required', 'in:super_admin,admin'],
             'status' => ['required', 'in:aktif,nonaktif'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);

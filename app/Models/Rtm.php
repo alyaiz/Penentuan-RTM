@@ -13,7 +13,7 @@ class Rtm extends Model
         'user_id',
         'name',
         'nik',
-        'alamat',
+        'address',
         'penghasilan_id',
         'pengeluaran_id',
         'tempat_tinggal_id',

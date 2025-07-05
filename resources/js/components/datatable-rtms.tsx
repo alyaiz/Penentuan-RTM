@@ -249,8 +249,7 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
                                 <Button variant="outline" className="w-full" asChild>
                                     <Link href="/rumah-tangga-miskin/create">
                                         <PlusIcon />
-                                        <span className="hidden lg:inline">Tambah Data</span>
-                                        <span className="lg:hidden">Data</span>
+                                        <span className="lg:inline">Tambah RTM</span>
                                     </Link>
                                 </Button>
                             </div>

@@ -78,12 +78,36 @@ class RtmController extends Controller
 
     public function edit(string $id)
     {
-        return Inertia::render('rtm/edit');
+        $criterias = Criteria::getAllGroupedByType();
+        $rtm = Rtm::withAllCriteria()->findOrFail($id);
+
+        return Inertia::render('rtm/edit', [
+            'criterias' => $criterias,
+            'rtm' => $rtm,
+        ]);
     }
 
     public function update(Request $request, string $id)
     {
-        //
+        $rtm = Rtm::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'nik' => 'required|string|size:16|unique:rtms,nik,' . $rtm->id,
+            'address' => 'nullable|string',
+            'penghasilan_id' => 'required|exists:criterias,id',
+            'pengeluaran_id' => 'required|exists:criterias,id',
+            'tempat_tinggal_id' => 'required|exists:criterias,id',
+            'status_kepemilikan_rumah_id' => 'required|exists:criterias,id',
+            'kondisi_rumah_id' => 'required|exists:criterias,id',
+            'aset_yang_dimiliki_id' => 'required|exists:criterias,id',
+            'transportasi_id' => 'required|exists:criterias,id',
+            'penerangan_rumah_id' => 'required|exists:criterias,id',
+        ]);
+
+        $rtm->update($validated);
+
+        return redirect()->back()->with('rtms/edit')->with('success', 'Data rumah tangga miskin berhasil diperbarui.');
     }
 
     public function destroy(string $id)

@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, Criteria } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler } from 'react';
 import { toast } from 'sonner';
 
 type CreateRtmProps = {
@@ -22,8 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function CreateRtm({ criterias }: CreateRtmProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         nik: '',
         name: '',
         address: '',
@@ -39,27 +38,24 @@ export default function CreateRtm({ criterias }: CreateRtmProps) {
 
     const handleCreate: FormEventHandler = (e) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
         post('/rumah-tangga-miskin', {
             onSuccess: () => {
-                toast.success('Berhasil disimpan', {
+                reset();
+                toast.success('Berhasil Disimpan', {
                     description: 'Data rumah tangga miskin berhasil disimpan.',
                 });
             },
             onError: () => {
-                toast.error('Gagal menyimpan', {
+                toast.error('Gagal Disimpan', {
                     description: 'Mohon periksa kembali data yang dimasukkan.',
                 });
-            },
-            onFinish: () => {
-                setIsSubmitting(false);
             },
         });
     };
 
     const renderInputField = (label: string, field: keyof typeof data, placeholder: string, type: 'text' | 'number' = 'text') => (
-        <div className="flex flex-col gap-2">
+        <div className="grid gap-2">
             <Label htmlFor={field}>
                 {label}
                 <span className="text-primary"> *</span>
@@ -70,7 +66,7 @@ export default function CreateRtm({ criterias }: CreateRtmProps) {
     );
 
     const renderCriteriaSelect = (label: string, field: keyof typeof data, options: Criteria[]) => (
-        <div className="flex flex-col gap-2">
+        <div className="grid gap-2">
             <Label>
                 {label}
                 <span className="text-primary"> *</span>
@@ -101,7 +97,7 @@ export default function CreateRtm({ criterias }: CreateRtmProps) {
                     {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
                     {renderInputField('NIK', 'nik', 'Masukkan Nomor Induk Kependudukan')}
 
-                    <div className="flex flex-col gap-2 md:col-span-2">
+                    <div className="grid gap-2 md:col-span-2">
                         <Label htmlFor="address">Alamat</Label>
                         <Textarea
                             id="address"
@@ -122,8 +118,8 @@ export default function CreateRtm({ criterias }: CreateRtmProps) {
                     {renderCriteriaSelect('Penerangan Rumah', 'penerangan_rumah_id', criterias.penerangan_rumah)}
 
                     <div className="flex justify-end pt-2 md:col-span-2">
-                        <Button type="submit" disabled={processing}>
-                            {isSubmitting ? (
+                        <Button type="submit" disabled={processing} className="w-full">
+                            {processing ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Menyimpan...
