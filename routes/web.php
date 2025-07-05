@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('pengguna', UserController::class);
     Route::resource('rumah-tangga-miskin', RtmController::class);
+
+    Route::get('/kriteria/ambil-bobot', [CriteriaController::class, 'getWeights']);
+    Route::put('/kriteria/update-bobot', [CriteriaController::class, 'updateWeights']);
     Route::resource('kriteria', CriteriaController::class);
 });
 

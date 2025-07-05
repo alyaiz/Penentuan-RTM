@@ -33,9 +33,9 @@ export default function DeleteUserDialog({ user }: DeleteUserDialogProps) {
                     description: `Pengguna "${user.name}" telah berhasil dihapus.`,
                 });
             },
-            onError: (errors) => {
-                const errorMessage = errors.message || 'Terjadi kesalahan saat menghapus pengguna.';
-                const suggestion = errors.suggestion || '';
+            onError: (err) => {
+                const errorMessage = err.message || 'Terjadi kesalahan saat menghapus pengguna.';
+                const suggestion = err.suggestion || '';
 
                 toast.error('Gagal Menghapus', {
                     description: suggestion ? `${errorMessage} ${suggestion}` : errorMessage,

@@ -1,4 +1,3 @@
-import CreateUserDialog from '@/components/create-user-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -22,6 +21,7 @@ import {
 import { ChevronDownIcon, ColumnsIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import SetWeightDialog from './set-weight-dialog';
 
 type DataTableProps = {
     data: Criteria[];
@@ -210,7 +210,7 @@ export default function DataTableCriterias({ data, totalItems, initialFilters = 
                             </div>
 
                             <div className="flex-1 md:flex-none">
-                                <CreateUserDialog />
+                                <SetWeightDialog />
                             </div>
                         </div>
 

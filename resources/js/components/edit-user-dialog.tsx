@@ -80,6 +80,12 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
                 });
 
                 setErrors(formattedErrors);
+
+                if (Object.keys(formattedErrors).length === 0) {
+                    toast.error('Gagal Diperbarui', {
+                        description: 'Terjadi kesalahan saat memperbarui data pengguna.',
+                    });
+                }
             },
             onFinish: () => {
                 setIsSubmitting(false);

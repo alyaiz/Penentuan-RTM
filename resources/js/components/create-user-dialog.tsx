@@ -57,6 +57,12 @@ export default function CreateUserDialog() {
                 });
 
                 setErrors(formattedErrors);
+
+                if (Object.keys(formattedErrors).length === 0) {
+                    toast.error('Gagal Diperbarui', {
+                        description: 'Terjadi kesalahan saat menyimpan data pengguna.',
+                    });
+                }
             },
             onFinish: () => {
                 setIsSubmitting(false);
