@@ -11,12 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Pengaturan Kata Sandi',
-        href: '/settings/password',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Kata Sandi', href: '/settings/password' }];
 
 export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
@@ -50,7 +45,7 @@ export default function Password() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pengaturan Profil" />
+            <Head title="Pengaturan Kata Sandi" />
 
             <SettingsLayout>
                 <div className="space-y-6">

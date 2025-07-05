@@ -4,16 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Criteria, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Kriteria',
-        href: '/kriteria',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Kriteria', href: '/kriteria' }];
 
 export default function Criterias() {
     const { criterias } = usePage<{ criterias: Criteria[] }>().props;

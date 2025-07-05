@@ -11,12 +11,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Pengaturan Profil',
-        href: '/settings/profile',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Profil', href: '/settings/profile' }];
 
 type ProfileForm = {
     name: string;

@@ -16,7 +16,6 @@ type CreateRtmProps = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
     { title: 'Rumah Tangga Miskin', href: '/rumah-tangga-miskin' },
     { title: 'Tambah', href: '/rumah-tangga-miskin/create' },
 ];

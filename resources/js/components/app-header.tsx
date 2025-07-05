@@ -8,54 +8,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
+import { NavItem, type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, HousePlug, LayoutGrid, ListCheck, ListOrdered, Menu, User } from 'lucide-react';
+import { HousePlug, LayoutGrid, ListCheck, ListOrdered, Menu, User } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import AppearanceToggleDropdown from './appearance-dropdown';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Pengguna',
-        href: '/pengguna',
-        icon: User,
-    },
-    {
-        title: 'Rumah Tangga Miskin',
-        href: '/rumah-tangga-miskin',
-        icon: HousePlug,
-    },
-    {
-        title: 'Kriteria',
-        href: '/kriteria',
-        icon: ListOrdered,
-    },
-
-    {
-        title: 'Hasil',
-        href: '/hasil',
-        icon: ListCheck,
-    },
-];
-
-const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
 
 const activeItemStyles = 'text-neutral-900 dark:bg-primary dark:text-neutral-100';
 
@@ -67,6 +25,36 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dasbor',
+            href: '/dasbor',
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Pengguna',
+            href: '/pengguna',
+            icon: User,
+        },
+        {
+            title: 'Rumah Tangga Miskin',
+            href: '/rumah-tangga-miskin',
+            icon: HousePlug,
+        },
+        {
+            title: 'Kriteria',
+            href: '/kriteria',
+            icon: ListOrdered,
+        },
+
+        {
+            title: 'Hasil',
+            href: '/hasil',
+            icon: ListCheck,
+        },
+    ];
+
     return (
         <>
             <div className="border-sidebar-border/80 border-b">
@@ -87,27 +75,27 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
-                                            {mainNavItems.map((item) => (
-                                                <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            ))}
-                                        </div>
-
-                                        <div className="flex flex-col space-y-4">
-                                            {rightNavItems.map((item) => (
-                                                <a
-                                                    key={item.title}
-                                                    href={item.href}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center space-x-2 font-medium"
-                                                >
-                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                    <span>{item.title}</span>
-                                                </a>
-                                            ))}
+                                            {auth.user ? (
+                                                <>
+                                                    {mainNavItems
+                                                        .filter((item) => {
+                                                            if (item.href === '/pengguna' && auth.user?.role !== 'super_admin') return false;
+                                                            return true;
+                                                        })
+                                                        .map((item) => (
+                                                            <Link
+                                                                key={item.title}
+                                                                href={item.href}
+                                                                className="flex items-center space-x-2 font-medium"
+                                                            >
+                                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                                <span>{item.title}</span>
+                                                            </Link>
+                                                        ))}
+                                                </>
+                                            ) : (
+                                                <></>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -115,7 +103,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href="/" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
@@ -125,24 +113,29 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {auth.user ? (
                                     <>
-                                        {mainNavItems.map((item, index) => (
-                                            <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                                <Link
-                                                    href={item.href}
-                                                    className={cn(
-                                                        navigationMenuTriggerStyle(),
-                                                        page.url === item.href && activeItemStyles,
-                                                        'h-9 cursor-pointer px-3',
+                                        {mainNavItems
+                                            .filter((item) => {
+                                                if (item.href === '/pengguna' && auth.user?.role !== 'super_admin') return false;
+                                                return true;
+                                            })
+                                            .map((item, index) => (
+                                                <NavigationMenuItem key={index} className="relative flex h-full items-center">
+                                                    <Link
+                                                        href={item.href}
+                                                        className={cn(
+                                                            navigationMenuTriggerStyle(),
+                                                            page.url === item.href && activeItemStyles,
+                                                            'h-9 cursor-pointer px-3',
+                                                        )}
+                                                    >
+                                                        {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                        {item.title}
+                                                    </Link>
+                                                    {page.url === item.href && (
+                                                        <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
                                                     )}
-                                                >
-                                                    {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                                    {item.title}
-                                                </Link>
-                                                {page.url === item.href && (
-                                                    <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"></div>
-                                                )}
-                                            </NavigationMenuItem>
-                                        ))}
+                                                </NavigationMenuItem>
+                                            ))}
                                     </>
                                 ) : (
                                     <></>

@@ -5,16 +5,7 @@ import { Paginator, Rtm, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Rumah Tangga Miskin',
-        href: '/rumah-tangga-miskin',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Rumah Tangga Miskin', href: '/rumah-tangga-miskin' }];
 
 export default function Rtms() {
     const { props } = usePage<{ rtms: Paginator<Rtm> }>();

@@ -5,16 +5,7 @@ import { Paginator, User, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Pengguna',
-        href: '/users',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengguna', href: '/users' }];
 
 export default function Users() {
     const { props } = usePage<{ users: Paginator<User> }>();
