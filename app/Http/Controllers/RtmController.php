@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessCalculate;
 use App\Models\Criteria;
 use App\Models\Rtm;
 use Illuminate\Http\Request;
@@ -12,6 +13,51 @@ class RtmController extends Controller
 {
     public function index(Request $request)
     {
+        $rtm = $query = Rtm::withAllCriteria()->findOrFail(1);
+        $criteriaScales = collect([
+            'penghasilan' => $rtm->penghasilanCriteria->scale ?? 0,
+            'pengeluaran' => $rtm->pengeluaranCriteria->scale ?? 0,
+            'tempat_tinggal' => $rtm->tempatTinggalCriteria->scale ?? 0,
+            'status_kepemilikan_rumah' => $rtm->statusKepemilikanRumahCriteria->scale ?? 0,
+            'kondisi_rumah' => $rtm->kondisiRumahCriteria->scale ?? 0,
+            'aset' => $rtm->asetYangDimilikiCriteria->scale ?? 0,
+            'transportasi' => $rtm->transportasiCriteria->scale ?? 0,
+            'penerangan' => $rtm->peneranganRumahCriteria->scale ?? 0,
+        ]);
+
+        $criteriaWeights = collect([
+            'penghasilan' => $rtm->penghasilanCriteria->weight ?? 0,
+            'pengeluaran' => $rtm->pengeluaranCriteria->weight ?? 0,
+            'tempat_tinggal' => $rtm->tempatTinggalCriteria->weight ?? 0,
+            'status_kepemilikan_rumah' => $rtm->statusKepemilikanRumahCriteria->weight ?? 0,
+            'kondisi_rumah' => $rtm->kondisiRumahCriteria->weight ?? 0,
+            'aset' => $rtm->asetYangDimilikiCriteria->weight ?? 0,
+            'transportasi' => $rtm->transportasiCriteria->weight ?? 0,
+            'penerangan' => $rtm->peneranganRumahCriteria->weight ?? 0,
+        ]);
+        
+        $maxScale = $criteriaScales->max();
+        
+        $normalizedScales = $criteriaScales->map(function ($scale) use ($maxScale) {
+            return $maxScale > 0 ? $scale / $maxScale : 0;
+        });
+
+        $sawScore = $normalizedScales->map(function ($value, $key) use ($criteriaWeights) {
+            return $value * ($criteriaWeights[$key] ?? 0);
+        })->sum();
+        
+        $wpScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
+            $weight = $criteriaWeights[$key] ?? 0;
+            return $carry * pow($value > 0 ? $value : 0.0001, $weight);
+        }, 1);
+        
+        return dd([
+            'normalized_scales' => $normalizedScales,
+            'weights' => $criteriaWeights,
+            'saw_score' => $sawScore,
+            'wp_score' => $wpScore,
+        ]);
+
         $perPage = $request->get('per_page', 20);
         $perPage = in_array($perPage, [20, 30, 40, 50]) ? $perPage : 10;
 
@@ -66,7 +112,9 @@ class RtmController extends Controller
 
         $validated['user_id'] = Auth::id();
 
-        Rtm::create($validated);
+        $rtm = Rtm::create($validated);
+
+        ProcessCalculate::dispatch($rtm->id);
 
         return redirect()->back()->with('rtms/create')->with('success', 'Data rumah tangga miskin berhasil ditambahkan.');
     }
