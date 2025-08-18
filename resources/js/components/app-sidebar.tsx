@@ -2,18 +2,44 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { SlidersHorizontal } from 'lucide-react';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, ListOrdered, ListCheck, User } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dasbor',
-        href: '/dasbor',
-        icon: LayoutGrid,
+      title: 'Dashboard',
+      href: '/dashboard',
+      icon: LayoutGrid,
     },
-];
+    {
+      title: 'Pengguna',
+      href: '/pengguna',
+      icon: User,
+    },
+    {
+      title: 'Rumah Tangga Miskin',
+      href: '/rumah-tangga-miskin',
+      icon: Folder,
+    },
+    {
+      title: 'Kriteria',
+      href: '/kriteria',
+      icon: ListOrdered,
+    },
+    {
+      title: 'Hasil', 
+      href: '/hasil',
+      icon: ListCheck,
+    },
+    { 
+      title: 'Ambang Kemiskinan',
+      href: '/settings/threshold',
+      icon: SlidersHorizontal,
+    },
+  ];
 
 const footerNavItems: NavItem[] = [
     {

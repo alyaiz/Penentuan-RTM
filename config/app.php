@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'poverty_threshold' => env('POVERTY_THRESHOLD', 0.5),
+
 ];

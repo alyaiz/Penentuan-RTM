@@ -51,7 +51,7 @@ class RtmController extends Controller
             return $carry * pow($value > 0 ? $value : 0.0001, $weight);
         }, 1);
         
-        return dd([
+        logger()->debug('RTM scores', [
             'normalized_scales' => $normalizedScales,
             'weights' => $criteriaWeights,
             'saw_score' => $sawScore,

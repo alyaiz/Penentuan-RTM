@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SAW;
-use App\Models\WP;
-use Inertia\Inertia;
-
 class WelcomeController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        return Inertia::render('welcome');
+        // data statis sementara (boleh kosong)
+        $desa = (object)[
+            'deskripsi'         => 'Selamat datang di portal desa.',
+            'jumlah_kk'         => null,
+            'jumlah_kk_miskin'  => null,
+            'hero_image'        => null,
+        ];
+
+        return view('public.welcome', compact('desa'));
     }
 }
