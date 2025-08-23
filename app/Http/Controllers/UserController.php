@@ -107,7 +107,7 @@ class UserController extends Controller
         try {
             $user->delete();
 
-            return redirect()->back()->with('success', 'Data Pengguna berhasil dihapus aaaa.');
+            return redirect()->back()->with('success', 'Data Pengguna berhasil dihapus.');
         } catch (QueryException $e) {
             if ($e->getCode() === '23000') {
                 return redirect()->back()->withErrors([

@@ -78,6 +78,32 @@ export interface Rtm {
     penerangan_rumah_criteria?: Criteria;
 }
 
+export interface RtmResult {
+    id: number;
+    name: string;
+    address?: string;
+    saw: {
+        id: number;
+        rtm_id: number;
+        score: number;
+    };
+    wp: {
+        id: number;
+        rtm_id: number;
+        score: number;
+    };
+}
+
+export interface RtmStats {
+    saw: number;
+    wp: number;
+}
+
+export interface RtmTresholds {
+    saw: number;
+    wp: number;
+}
+
 export interface Paginator<T> {
     data: T[];
     current_page: number;

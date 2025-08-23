@@ -285,7 +285,7 @@ class HasilController extends Controller
     public function exportMCRPDF(Request $request)
     {
         $data = $this->sensitivitas($request)->getData(true);
-        $pdf = Pdf::loadView('exports.mcr', [
+        $pdf = Pdf::loadView('exports.mcr-pdf', [
             'rows' => $data['rows'],
             'summary' => $data['summary'],
             'printed_at' => now()->format('d/m/Y H:i'),
@@ -324,8 +324,15 @@ class HasilController extends Controller
             private $rowsSummary;
             private $headDetail;
             private $rowsDetail;
-            public function __construct($hs, $rs, $hd, $rd) { $this->headSummary = $hs; $this->rowsSummary = $rs; $this->headDetail = $hd; $this->rowsDetail = $rd; }
-            public function sheets(): array {
+            public function __construct($hs, $rs, $hd, $rd)
+            {
+                $this->headSummary = $hs;
+                $this->rowsSummary = $rs;
+                $this->headDetail = $hd;
+                $this->rowsDetail = $rd;
+            }
+            public function sheets(): array
+            {
                 return [
                     new \App\Exports\ArrayExport($this->headSummary, $this->rowsSummary),
                     new \App\Exports\ArrayExport($this->headDetail, $this->rowsDetail),

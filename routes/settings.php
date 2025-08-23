@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\CalculateController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\ThresholdController;
@@ -14,13 +15,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('settings/calculate', [CalculateController::class, 'edit'])->name('calculate.edit');
+    Route::put('settings/calculate', [CalculateController::class, 'update'])->name('calculate.update');
+
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
-
-    Route::get('/pengaturan', [SettingsController::class, 'index'])->name('settings.index');
-    Route::put('/pengaturan', [SettingsController::class, 'update'])->name('settings.update');
 });

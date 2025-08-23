@@ -14,13 +14,6 @@ class CriteriaSeeder extends Seeder
     public function run(): void
     {
         $criterias = [
-            // tempat_tinggal
-            ['name' => 'Tidak punya tempat tinggal', 'type' => 'tempat_tinggal', 'scale' => 0.05, 'weight' => 0.125],
-            ['name' => 'Menumpang', 'type' => 'tempat_tinggal', 'scale' => 0.25, 'weight' => 0.125],
-            ['name' => 'Mengontrak', 'type' => 'tempat_tinggal', 'scale' => 0.5, 'weight' => 0.125],
-            ['name' => 'Rumah orang tua', 'type' => 'tempat_tinggal', 'scale' => 0.75, 'weight' => 0.125],
-            ['name' => 'Milik sendiri', 'type' => 'tempat_tinggal', 'scale' => 1, 'weight' => 0.125],
-
             // penghasilan
             ['name' => '0 - 1.000.000', 'type' => 'penghasilan', 'scale' => 0.05, 'weight' => 0.125],
             ['name' => '1.000.001 - 1.500.000', 'type' => 'penghasilan', 'scale' => 0.25, 'weight' => 0.125],
@@ -34,6 +27,13 @@ class CriteriaSeeder extends Seeder
             ['name' => '1.500.001 - 2.000.000', 'type' => 'pengeluaran', 'scale' => 0.5, 'weight' => 0.125],
             ['name' => '2.000.001 - 2.500.000', 'type' => 'pengeluaran', 'scale' => 0.75, 'weight' => 0.125],
             ['name' => '> 2.500.000', 'type' => 'pengeluaran', 'scale' => 1, 'weight' => 0.125],
+
+            // tempat_tinggal
+            ['name' => 'Tidak punya tempat tinggal', 'type' => 'tempat_tinggal', 'scale' => 0.05, 'weight' => 0.125],
+            ['name' => 'Menumpang', 'type' => 'tempat_tinggal', 'scale' => 0.25, 'weight' => 0.125],
+            ['name' => 'Mengontrak', 'type' => 'tempat_tinggal', 'scale' => 0.5, 'weight' => 0.125],
+            ['name' => 'Rumah orang tua', 'type' => 'tempat_tinggal', 'scale' => 0.75, 'weight' => 0.125],
+            ['name' => 'Milik sendiri', 'type' => 'tempat_tinggal', 'scale' => 1, 'weight' => 0.125],
 
             // status_kepemilikan_rumah
             ['name' => 'Pakai Gratis', 'type' => 'status_kepemilikan_rumah', 'scale' => 0.25, 'weight' => 0.125],

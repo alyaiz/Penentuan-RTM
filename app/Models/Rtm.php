@@ -29,13 +29,21 @@ class Rtm extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Relationship ke User
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relationships ke Criteria untuk setiap kriteria
+    public function saw()
+    {
+        return $this->hasOne(Saw::class);
+    }
+
+    public function wp()
+    {
+        return $this->hasOne(Wp::class);
+    }
+
     public function penghasilanCriteria()
     {
         return $this->belongsTo(Criteria::class, 'penghasilan_id');
@@ -178,38 +186,6 @@ class Rtm extends Model
         ];
     }
 
-    // Method untuk menghitung SAW Score
-    public function calculateSAWScore()
-    {
-        $criteriaDetails = $this->getAllCriteriaDetails();
-        $totalScore = 0;
-
-        foreach ($criteriaDetails as $criteria) {
-            $totalScore += $criteria['weight'];
-        }
-
-        return round($totalScore, 4);
-    }
-
-    // Method untuk mendapatkan ranking berdasarkan SAW Score
-    public static function getRankingWithSAWScore()
-    {
-        return static::withAllCriteria()
-            ->get()
-            ->map(function ($rtm) {
-                $rtm->saw_score = $rtm->calculateSAWScore();
-                return $rtm;
-            })
-            ->sortByDesc('saw_score')
-            ->values();
-    }
-
-    // Accessor untuk SAW Score
-    public function getSawScoreAttribute()
-    {
-        return $this->calculateSAWScore();
-    }
-
     // Method untuk validasi kriteria
     public function hasCompleteData()
     {
@@ -221,5 +197,25 @@ class Rtm extends Model
             $this->aset_yang_dimiliki_id &&
             $this->transportasi_id &&
             $this->penerangan_rumah_id;
+    }
+
+    // Scope untuk mengambil data RTM beserta SAW dan WP scores
+    public function scopeWithScores($query)
+    {
+        $query->with([
+            'saw:id,rtm_id,score',
+            'wp:id,rtm_id,score',
+        ]);
+    }
+
+    // Method untuk mengambil data lengkap dengan ranking
+    public static function getRankingData($method)
+    {
+        return self::withScores()
+            ->get()
+            ->sortByDesc(function ($rtm) use ($method) {
+                return (float) optional($rtm->$method)->score ?? 0;
+            })
+            ->values();
     }
 }

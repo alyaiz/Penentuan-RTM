@@ -13,6 +13,11 @@ const sidebarNavItems: NavItem[] = [
         icon: null,
     },
     {
+        title: 'Perhitungan',
+        href: '/settings/calculate',
+        icon: null,
+    },
+    {
         title: 'Kata Sandi',
         href: '/settings/password',
         icon: null,
@@ -25,7 +30,6 @@ const sidebarNavItems: NavItem[] = [
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
-    // Saat render dari server, hanya render layout di sisi client...
     if (typeof window === 'undefined') {
         return null;
     }

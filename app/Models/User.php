@@ -50,6 +50,6 @@ class User extends Authenticatable
 
     public function rtms()
     {
-        return $this->hasMany(Rtm::class, 'id_user');
+        return $this->hasMany(Rtm::class, 'user_id');
     }
 }

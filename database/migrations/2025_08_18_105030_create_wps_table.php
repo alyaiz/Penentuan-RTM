@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('criterias', function (Blueprint $table) {
+        Schema::create('wps', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->enum('type', ['penghasilan', 'pengeluaran', 'tempat_tinggal', 'status_kepemilikan_rumah', 'kondisi_rumah', 'aset_yang_dimiliki', 'transportasi', 'penerangan_rumah']);
-            $table->decimal('weight', 8, 6);
-            $table->decimal('scale', 8, 6);
+            $table->foreignId('rtm_id')->constrained();
+            $table->decimal('score', 12, 10);
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('criterias');
+        Schema::dropIfExists('wps');
     }
 };
