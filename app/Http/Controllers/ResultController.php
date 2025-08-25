@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ArrayExport;
+use App\Exports\MultiSheetArrayExport;
+use App\Exports\SingleSheetArrayExport;
 use App\Models\Rtm;
 use App\Models\Saw;
 use App\Models\Setting;
 use App\Models\Wp;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -22,7 +23,8 @@ class ResultController extends Controller
         $perPage = $request->get('per_page', 20);
         $perPage = in_array($perPage, [20, 30, 40, 50]) ? $perPage : 20;
 
-        $method = $request->get('method', 'saw');
+        $metode = $request->get('metode', 'saw');
+        $status = $request->get('status');
         $search = $request->get('search');
 
         $query = Rtm::withScores()->select('id', 'name', 'address');
@@ -34,20 +36,44 @@ class ResultController extends Controller
             });
         }
 
-        if ($method === 'saw') {
-            $query->whereHas('saw')
-                ->orderBy(
-                    Saw::select('score')
-                        ->whereColumn('saws.rtm_id', 'rtms.id')
-                        ->limit(1)
-                );
-        } elseif ($method === 'wp') {
-            $query->whereHas('wp')
-                ->orderBy(
-                    Wp::select('score')
-                        ->whereColumn('wps.rtm_id', 'rtms.id')
-                        ->limit(1)
-                );
+        if ($metode === 'saw') {
+            $threshold = (float) ($settings['threshold_saw'] ?? 0);
+
+            if ($status) {
+                $query->whereHas('saw', function ($q) use ($status, $threshold) {
+                    if ($status === 'miskin') {
+                        $q->where('score', '<', $threshold);
+                    } elseif ($status === 'tidak_miskin') {
+                        $q->where('score', '>=', $threshold);
+                    }
+                });
+            }
+
+            $query->orderBy(
+                Saw::select('score')
+                    ->whereColumn('saws.rtm_id', 'rtms.id')
+                    ->limit(1)
+            );
+        }
+
+        if ($metode === 'wp') {
+            $threshold = (float) ($settings['threshold_wp'] ?? 0);
+
+            if ($status) {
+                $query->whereHas('wp', function ($q) use ($status, $threshold) {
+                    if ($status === 'miskin') {
+                        $q->where('score', '<', $threshold);
+                    } elseif ($status === 'tidak_miskin') {
+                        $q->where('score', '>=', $threshold);
+                    }
+                });
+            }
+
+            $query->orderBy(
+                Wp::select('score')
+                    ->whereColumn('wps.rtm_id', 'rtms.id')
+                    ->limit(1)
+            );
         }
 
         $rtms = $query->paginate($perPage);
@@ -60,7 +86,7 @@ class ResultController extends Controller
         return Inertia::render('results', [
             'rtms' => $rtms,
             'filters' => [
-                'order_by' => $method,
+                'order_by' => $metode,
                 'search' => $search,
             ],
             'stats' => [
@@ -115,8 +141,8 @@ class ResultController extends Controller
 
                 $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales) {
                     $maxScale = $maxCriteriaScales[$key] ?? '1';
-                    return bccomp($maxScale, '0', 6) > 0
-                        ? bcdiv($scale, $maxScale, 6)
+                    return bccomp($maxScale, '0', 5) > 0
+                        ? bcdiv($scale, $maxScale, 5)
                         : '0';
                 });
 
@@ -128,11 +154,11 @@ class ResultController extends Controller
                     return $carry * $powered;
                 }, 1.0);
 
-                $vektorSFormatted = number_format($vektorS, 6, '.', '');
+                $vektorSFormatted = number_format($vektorS, 5, '.', '');
 
                 $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
-                    $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 6);
-                    return bcadd($carry, $weighted, 6);
+                    $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 5);
+                    return bcadd($carry, $weighted, 5);
                 }, '0');
 
                 Saw::updateOrCreate(
@@ -155,8 +181,8 @@ class ResultController extends Controller
             $wpResults = $sawResults->map(function ($result) use ($totalVektorS) {
                 $vektorSFloat = (float) str_replace(',', '', $result['vektor_s']);
                 $vektorSString = (string) $vektorSFloat;
-                $wpScore = bccomp($totalVektorS, '0', 6) > 0
-                    ? bcdiv($vektorSString, $totalVektorS, 6)
+                $wpScore = bccomp($totalVektorS, '0', 5) > 0
+                    ? bcdiv($vektorSString, $totalVektorS, 5)
                     : '0';
 
                 Wp::updateOrCreate(
@@ -186,60 +212,89 @@ class ResultController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $filters = [
-            'status' => $request->get('status'),
-            'method' => $request->get('method', 'saw'),
-        ];
+        try {
+            $filters = [
+                'status' => $request->get('status'),
+                'metode' => $request->get('metode', 'saw'),
+            ];
 
-        $settings = Setting::whereIn('key', ['threshold_saw', 'threshold_wp'])->pluck('value', 'key');
+            $settings = Setting::whereIn('key', ['threshold_saw', 'threshold_wp'])->pluck('value', 'key');
 
-        $rows = $this->buildResults($filters);
+            $rows = $this->buildResults($filters);
 
-        $pdf = Pdf::loadView('exports.result-pdf', [
-            'printed_at' => now()->format('d/m/Y H:i'),
-            'rows' => $rows,
-            'method' => $filters['method'],
-            'tresholds' => [
-                'saw' => (float) ($settings['threshold_saw'] ?? 0.5),
-                'wp' => (float) ($settings['threshold_wp'] ?? 0.5),
-            ]
-        ])->setPaper('a4', 'portrait');
+            $pdf = Pdf::loadView('exports.result-pdf', [
+                'printed_at' => now()->format('d/m/Y H:i'),
+                'rows' => $rows,
+                'metode' => $filters['metode'],
+                'thresholds' => [
+                    'saw' => (float) ($settings['threshold_saw'] ?? 0.5),
+                    'wp' => (float) ($settings['threshold_wp'] ?? 0.5),
+                ]
+            ])->setPaper('a4', 'portrait');
 
-        return $pdf->download('hasil-saw-wp.pdf');
+            $filename = 'hasil-saw-wp-' . now()->format('Ymd_His') . '.pdf';
+            $path = storage_path('app/public/results/pdf/' . $filename);
+
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
+
+            file_put_contents($path, $pdf->output());
+
+            return response()->json([
+                'success' => true,
+                'path' => asset('storage/results/pdf/' . $filename),
+                'filename' => $filename
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat file PDF: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function exportExcel(Request $request)
     {
-        $filters = [
-            'status' => $request->get('status'),
-            'method' => $request->get('method', 'saw'),
-        ];
-
-        $rows = $this->buildResults($filters);
-
-        $head = ['No', 'NIK', 'Nama', 'Alamat', 'SAW', 'WP', 'Status SAW', 'Status WP'];
-        $data = [];
-
-        foreach ($rows as $index => $row) {
-            $data[] = [
-                $index + 1,
-                $row['nik'],
-                $row['nama'],
-                $row['alamat'],
-                number_format($row['saw'], 3, '.', ''),
-                $row['status_saw'],
-                number_format($row['wp'], 3, '.', ''),
-                $row['status_wp'],
+        try {
+            $filters = [
+                'status' => $request->get('status'),
+                'metode' => $request->get('metode', 'saw'),
             ];
-        }
 
-        return Excel::download(new ArrayExport($head, $data), 'hasil-saw-wp.xlsx');
+            $rows = $this->buildResults($filters);
+
+            $head = ['No', 'NIK', 'Nama', 'Alamat', 'SAW', 'Status SAW', 'WP', 'Status WP'];
+
+            $data = [];
+            foreach ($rows as $index => $row) {
+                $data[] = [
+                    $index + 1,
+                    $row['nik'] ?? '-',
+                    $row['nama'] ?? '-',
+                    $row['alamat'] ?? '-',
+                    isset($row['saw']) ? number_format($row['saw'], 3, '.', '') : '-',
+                    $row['status_saw'] ?? '-',
+                    isset($row['wp']) ? number_format($row['wp'], 3, '.', '') : '-',
+                    $row['status_wp'] ?? '-',
+                ];
+            }
+
+            $filename = 'hasil-saw-wp-' . now()->format('Ymd_His') . '.xlsx';
+
+            return Excel::download(new SingleSheetArrayExport($head, $data, 'SAW & WP', $filters), $filename);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat file Excel: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     private function buildResults($filters)
     {
         $status = $filters['status'] ?? null;
-        $method = $filters['method'] ?? 'saw';
+        $metode = $filters['metode'] ?? 'saw';
 
         $settings = Setting::whereIn('key', ['threshold_saw', 'threshold_wp'])->pluck('value', 'key');
 
@@ -248,36 +303,40 @@ class ResultController extends Controller
 
         $query = Rtm::withScores()->select('id', 'nik', 'name', 'address');
 
-        if ($status === 'miskin') {
-            $query->where(function ($q) use ($thresholdSaw, $thresholdWp) {
-                $q->whereHas('saw', function ($sawQuery) use ($thresholdSaw) {
-                    $sawQuery->where('score', '<=', $thresholdSaw);
-                })->orWhereHas('wp', function ($wpQuery) use ($thresholdWp) {
-                    $wpQuery->where('score', '<=', $thresholdWp);
+        if ($metode === 'saw') {
+            if ($status) {
+                $query->whereHas('saw', function ($q) use ($status, $thresholdSaw) {
+                    if ($status === 'miskin') {
+                        $q->where('score', '<', $thresholdSaw);
+                    } elseif ($status === 'tidak_miskin') {
+                        $q->where('score', '>=', $thresholdSaw);
+                    }
                 });
-            });
-        } elseif ($status === 'tidak_miskin') {
-            $query->whereHas('saw', function ($sawQuery) use ($thresholdSaw) {
-                $sawQuery->where('score', '>', $thresholdSaw);
-            })->whereHas('wp', function ($wpQuery) use ($thresholdWp) {
-                $wpQuery->where('score', '>', $thresholdWp);
-            });
+            }
+
+            $query->orderBy(
+                Saw::select('score')
+                    ->whereColumn('saws.rtm_id', 'rtms.id')
+                    ->limit(1)
+            );
         }
 
-        if ($method === 'saw') {
-            $query->whereHas('saw')
-                ->orderBy(
-                    Saw::select('score')
-                        ->whereColumn('saws.rtm_id', 'rtms.id')
-                        ->limit(1),
-                );
-        } elseif ($method === 'wp') {
-            $query->whereHas('wp')
-                ->orderBy(
-                    Wp::select('score')
-                        ->whereColumn('wps.rtm_id', 'rtms.id')
-                        ->limit(1),
-                );
+        if ($metode === 'wp') {
+            if ($status) {
+                $query->whereHas('wp', function ($q) use ($status, $thresholdWp) {
+                    if ($status === 'miskin') {
+                        $q->where('score', '<', $thresholdWp);
+                    } elseif ($status === 'tidak_miskin') {
+                        $q->where('score', '>=', $thresholdWp);
+                    }
+                });
+            }
+
+            $query->orderBy(
+                Wp::select('score')
+                    ->whereColumn('wps.rtm_id', 'rtms.id')
+                    ->limit(1)
+            );
         }
 
         $rtms = $query->get();
@@ -304,69 +363,205 @@ class ResultController extends Controller
 
     public function exportMcrPdf()
     {
-        $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
+        try {
+            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
 
-        $sensitivityResults = $this->buildSensitivitas();
+            $sensitivityResults = $this->buildSensitivitas();
 
-        $summary = [];
-        $detailRows = [];
+            $summary = [];
+            $detailRows = [];
 
-        foreach ($sensitivityResults as $criteria => $deltas) {
-            $sawChanges = [];
-            $wpChanges = [];
+            foreach ($sensitivityResults as $criteria => $deltas) {
+                $sawChanges = [];
+                $wpChanges = [];
 
-            foreach ($deltas as $deltaLevel => $results) {
-                $sawPercent = (float) str_replace('%', '', $results['saw_percent_change']);
-                $wpPercent = (float) str_replace('%', '', $results['wp_percent_change']);
+                foreach ($deltas as $deltaLevel => $results) {
+                    $sawPercent = (float) str_replace('%', '', $results['saw_percent_change']);
+                    $wpPercent = (float) str_replace('%', '', $results['wp_percent_change']);
 
-                $sawChanges[] = abs($sawPercent);
-                $wpChanges[] = abs($wpPercent);
+                    $sawChanges[] = abs($sawPercent);
+                    $wpChanges[] = abs($wpPercent);
 
-                $detailRows[] = [
+                    $detailRows[] = [
+                        'kriteria' => $this->getCriteriaDisplayName($criteria),
+                        'delta' => '+' . ($deltaLevel * 100) . '%',
+                        'avg_change_saw' => $sawPercent,
+                        'avg_change_wp' => $wpPercent,
+                    ];
+                }
+
+                $summary[] = [
                     'kriteria' => $this->getCriteriaDisplayName($criteria),
-                    'delta' => '+' . ($deltaLevel * 100) . '%',
-                    'avg_change_saw' => $sawPercent,
-                    'avg_change_wp' => $wpPercent,
+                    'mcr_saw' => count($sawChanges) > 0 ? array_sum($sawChanges) / count($sawChanges) : 0,
+                    'mcr_wp' => count($wpChanges) > 0 ? array_sum($wpChanges) / count($wpChanges) : 0,
                 ];
             }
 
-            $summary[] = [
-                'kriteria' => $this->getCriteriaDisplayName($criteria),
-                'mcr_saw' => count($sawChanges) > 0 ? array_sum($sawChanges) / count($sawChanges) : 0,
-                'mcr_wp' => count($wpChanges) > 0 ? array_sum($wpChanges) / count($wpChanges) : 0,
-            ];
+            usort($summary, function ($a, $b) {
+                return $b['mcr_wp'] <=> $a['mcr_wp'];
+            });
+
+            $pdf = PDF::loadView('exports.mcr-pdf', [
+                'printed_at' => now()->format('d/m/Y H:i:s'),
+                'summary' => $summary,
+                'rows' => $detailRows,
+                'analysis_info' => [
+                    'total_rtm' => Rtm::count(),
+                    'delta_levels' => [$mcrDelta, $mcrDelta + $mcrDelta],
+                    'method_comparison' => $this->getmetodeComparison($summary),
+                ]
+            ]);
+
+            $filename = 'sensitivitas-saw-wp-' . now()->format('Ymd_His') . '.pdf';
+            $path = storage_path('app/public/sensitivitas/pdf/' . $filename);
+
+            if (!file_exists(dirname($path))) {
+                mkdir(dirname($path), 0755, true);
+            }
+
+            file_put_contents($path, $pdf->output());
+
+            return response()->json([
+                'success' => true,
+                'path' => asset('storage/sensitivitas/pdf/' . $filename),
+                'filename' => $filename
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat file PDF: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        usort($summary, function ($a, $b) {
-            return $b['mcr_wp'] <=> $a['mcr_wp'];
-        });
+    public function exportMcrExcel()
+    {
+        try {
+            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
 
-        // $data = [
-        //     'printed_at' => now()->format('d/m/Y H:i:s'),
-        //     'summary' => $summary,
-        //     'rows' => $detailRows,
-        //     'analysis_info' => [
-        //         'total_rtm' => Rtm::count(),
-        //         'delta_levels' => [$mcrDelta, $mcrDelta + $mcrDelta],
-        //         'method_comparison' => $this->getMethodComparison($summary),
-        //     ],
-        //     'title' => 'Laporan MCR',
-        // ];
+            $sensitivityResults = $this->buildSensitivitas();
 
-        // return view('exports.mcr-pdf', $data);
+            $summary = [];
+            $detailRows = [];
 
-        $pdf = PDF::loadView('exports.mcr-pdf', [
-            'printed_at' => now()->format('d/m/Y H:i:s'),
-            'summary' => $summary,
-            'rows' => $detailRows,
-            'analysis_info' => [
+            foreach ($sensitivityResults as $criteria => $deltas) {
+                $sawChanges = [];
+                $wpChanges = [];
+
+                foreach ($deltas as $deltaLevel => $results) {
+                    $sawPercent = (float) str_replace('%', '', $results['saw_percent_change']);
+                    $wpPercent = (float) str_replace('%', '', $results['wp_percent_change']);
+
+                    $sawChanges[] = abs($sawPercent);
+                    $wpChanges[] = abs($wpPercent);
+
+                    $detailRows[] = [
+                        'kriteria' => $this->getCriteriaDisplayName($criteria),
+                        'delta' => '+' . ($deltaLevel * 100) . '%',
+                        'avg_change_saw' => $sawPercent,
+                        'avg_change_wp' => $wpPercent,
+                    ];
+                }
+
+                $summary[] = [
+                    'kriteria' => $this->getCriteriaDisplayName($criteria),
+                    'mcr_saw' => count($sawChanges) > 0 ? array_sum($sawChanges) / count($sawChanges) : 0,
+                    'mcr_wp' => count($wpChanges) > 0 ? array_sum($wpChanges) / count($wpChanges) : 0,
+                ];
+            }
+
+            usort($summary, function ($a, $b) {
+                return $b['mcr_wp'] <=> $a['mcr_wp'];
+            });
+
+            $analysisInfo = [
                 'total_rtm' => Rtm::count(),
                 'delta_levels' => [$mcrDelta, $mcrDelta + $mcrDelta],
-                'method_comparison' => $this->getMethodComparison($summary),
-            ]
-        ]);
+                'method_comparison' => $this->getmetodeComparison($summary),
+            ];
 
-        return $pdf->download('mcr-saw-wp.pdf');
+            $summaryHead = ['No', 'Kriteria', 'MCR SAW (%)', 'MCR WP (%)', 'Level Sensitivitas'];
+            $summaryData = [];
+
+            foreach ($summary as $index => $s) {
+                $wpMcr = abs($s['mcr_wp']);
+                $levelText = '';
+                if ($wpMcr >= 1.0) {
+                    $levelText = 'Tinggi';
+                } elseif ($wpMcr >= 0.3) {
+                    $levelText = 'Sedang';
+                } else {
+                    $levelText = 'Rendah';
+                }
+
+                $summaryData[] = [
+                    $index + 1,
+                    $s['kriteria'],
+                    number_format(abs($s['mcr_saw']), 6, '.', ''),
+                    number_format(abs($s['mcr_wp']), 6, '.', ''),
+                    $levelText,
+                ];
+            }
+
+            $detailHead = ['No', 'Kriteria', 'Delta Bobot', 'Perubahan SAW (%)', 'Perubahan WP (%)', 'Metode Dominan'];
+            $detailData = [];
+
+            foreach ($detailRows as $index => $r) {
+                $sawAbs = abs($r['avg_change_saw']);
+                $wpAbs = abs($r['avg_change_wp']);
+                $dominant = $wpAbs > $sawAbs ? 'WP' : 'SAW';
+
+                $detailData[] = [
+                    $index + 1,
+                    $r['kriteria'],
+                    $r['delta'],
+                    number_format($r['avg_change_saw'], 6, '.', '') . '%',
+                    number_format($r['avg_change_wp'], 6, '.', '') . '%',
+                    $dominant,
+                ];
+            }
+
+            $sheetsData = [
+                'Ringkasan MCR' => [
+                    'headers' => $summaryHead,
+                    'data' => $summaryData,
+                    'info' => [
+                        'Total RTM: ' . number_format($analysisInfo['total_rtm']),
+                        'Delta Levels: ' . implode(', ', array_map(fn($d) => ($d * 100) . '%', $analysisInfo['delta_levels'])),
+                        'Metode: SAW & WP',
+                        'Rata-rata Sensitivitas SAW: ' . number_format($analysisInfo['method_comparison']['saw_average_sensitivity'], 4) . '%',
+                        'Rata-rata Sensitivitas WP: ' . number_format($analysisInfo['method_comparison']['wp_average_sensitivity'], 4) . '%',
+                        'Rasio Sensitivitas (WP/SAW): ' . number_format($analysisInfo['method_comparison']['sensitivity_ratio'], 1) . 'x',
+                        'Kriteria Paling Sensitif: ' . $analysisInfo['method_comparison']['most_sensitive_criteria'],
+                        'Kriteria Paling Stabil: ' . $analysisInfo['method_comparison']['least_sensitive_criteria'],
+                        'Metode Lebih Stabil: ' . ($analysisInfo['method_comparison']['saw_average_sensitivity'] < $analysisInfo['method_comparison']['wp_average_sensitivity'] ? 'SAW' : 'WP'),
+                    ]
+                ],
+                'Detail per Delta' => [
+                    'headers' => $detailHead,
+                    'data' => $detailData,
+                    'info' => [
+                        'MCR (Mean Change Rate) menunjukkan rata-rata perubahan persentase skor maksimum',
+                        'ketika bobot kriteria diubah. Nilai yang lebih tinggi menunjukkan kriteria',
+                        'tersebut lebih sensitif terhadap perubahan bobot.',
+                        '',
+                        'Level Sensitivitas:',
+                        '- Tinggi: MCR WP >= 1.0%',
+                        '- Sedang: MCR WP >= 0.3%',
+                        '- Rendah: MCR WP < 0.3%',
+                    ]
+                ]
+            ];
+
+            $filename = 'sensitivitas-saw-wp-' . now()->format('Ymd_His') . '.xlsx';
+
+            return Excel::download(new MultiSheetArrayExport($sheetsData), $filename);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat file Excel: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     private function getCriteriaDisplayName($criteria)
@@ -385,7 +580,7 @@ class ResultController extends Controller
         return $displayNames[$criteria] ?? ucfirst(str_replace('_', ' ', $criteria));
     }
 
-    private function getMethodComparison($summary)
+    private function getmetodeComparison($summary)
     {
         $sawAvg = array_sum(array_column($summary, 'mcr_saw')) / count($summary);
         $wpAvg = array_sum(array_column($summary, 'mcr_wp')) / count($summary);
@@ -441,7 +636,7 @@ class ResultController extends Controller
         $criteriaNames = array_keys($originalWeights);
 
         // 4. Tambahkan beberapa tingkat delta untuk analisis yang lebih comprehensive
-        $deltaLevels = [$mcrDelta, $mcrDelta + $mcrDelta]; // 5% dan 10%
+        $deltaLevels = [$mcrDelta, $mcrDelta + $mcrDelta];
 
         // Loop untuk setiap kriteria
         foreach ($criteriaNames as $targetCriteria) {
@@ -461,14 +656,14 @@ class ResultController extends Controller
                 // Hitung scores dengan bobot yang dimodifikasi
                 $modifiedResults = $this->calculateMcr($rtms, $maxCriteriaScales, $modifiedWeights);
 
-                $sawDifference = bcsub((string) $modifiedResults['saw_max'], (string) $sawMaxScore, 8);
-                $wpDifference = bcsub((string) $modifiedResults['wp_max'], (string) $wpMaxScore, 8);
+                $sawDifference = bcsub((string) $modifiedResults['saw_max'], (string) $sawMaxScore, 5);
+                $wpDifference = bcsub((string) $modifiedResults['wp_max'], (string) $wpMaxScore, 5);
 
                 $sensitivityResults[$targetCriteria][number_format($deltaLevel, 2)] = [
                     'saw_difference' => $sawDifference,
                     'wp_difference' => $wpDifference,
-                    'saw_percent_change' => $sawMaxScore > 0 ? bcmul(bcdiv($sawDifference, (string) $sawMaxScore, 10), '100', 6) . '%' : '0%',
-                    'wp_percent_change' => $wpMaxScore > 0 ? bcmul(bcdiv($wpDifference, (string) $wpMaxScore, 10), '100', 6) . '%' : '0%',
+                    'saw_percent_change' => $sawMaxScore > 0 ? bcmul(bcdiv($sawDifference, (string) $sawMaxScore, 10), '100', 5) . '%' : '0%',
+                    'wp_percent_change' => $wpMaxScore > 0 ? bcmul(bcdiv($wpDifference, (string) $wpMaxScore, 10), '100', 5) . '%' : '0%',
                 ];
             }
         }
@@ -503,28 +698,31 @@ class ResultController extends Controller
 
             $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales) {
                 $maxScale = $maxCriteriaScales[$key] ?? '1';
-                return bccomp($maxScale, '0', 8) > 0
-                    ? bcdiv($scale, $maxScale, 8)
+                return bccomp($maxScale, '0', 5) > 0
+                    ? bcdiv($scale, $maxScale, 5)
                     : '0';
             });
+
             $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
-                $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 8);
-                return bcadd($carry, $weighted, 8);
+                $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 5);
+                return bcadd($carry, $weighted, 5);
             }, '0');
 
             $vektorS = $criteriaScales->reduce(function ($carry, $value, $key) use ($weights) {
                 $weight = (float) $weights[$key];
                 $originalValue = (float) $value;
-                $safeValue = $originalValue > 0 ? $originalValue : 1e-10;
+                $safeValue = $originalValue > 0 ? $originalValue : 0.0001;
                 $powered = pow($safeValue, $weight);
                 return $carry * $powered;
             }, 1.0);
+
+            $vektorSFormatted = number_format($vektorS, 5, '.', '');
 
             return [
                 'rtm_id' => $rtm->id,
                 'nama_kepala_keluarga' => $rtm->name ?? null,
                 'saw_score' => (float) $sawScore,
-                'vektor_s' => $vektorS,
+                'vektor_s' => $vektorSFormatted,
             ];
         });
 
@@ -532,8 +730,8 @@ class ResultController extends Controller
 
         $wpResults = $sawResults->map(function ($result) use ($totalVektorS) {
             $vektorSString = (string) $result['vektor_s'];
-            $wpScore = bccomp($totalVektorS, '0', 8) > 0
-                ? bcdiv($vektorSString, $totalVektorS, 8)
+            $wpScore = bccomp($totalVektorS, '0', 5) > 0
+                ? bcdiv($vektorSString, $totalVektorS, 5)
                 : '0';
 
             return [

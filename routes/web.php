@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/hasil/pdf', [ResultController::class, 'exportPdf'])->name('hasil.pdf');
     Route::get('/hasil/excel', [ResultController::class, 'exportExcel'])->name('hasil.excel');
     Route::get('/hasil/sensitivitas/pdf', [ResultController::class, 'exportMcrPdf'])->name('hasil.sensitivitas.pdf');
+    Route::get('/hasil/sensitivitas/excel', [ResultController::class, 'exportMcrExcel'])->name('hasil.sensitivitas.excel');
 
     // Route::get('/hasil/sensitivitas', [HasilController::class, 'sensitivitas'])->name('hasil.sens');
     // Route::get('/hasil/mcr/pdf', [HasilController::class, 'exportMCRPDF'])->name('hasil.mcr.pdf');

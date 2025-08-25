@@ -23,6 +23,8 @@ import {
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon, RefreshCcw } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import FilterDialog from './dialog-filter';
+import SensitivitasDialog from './dialog-sensitivitas';
 
 type DataTableProps = {
     data: RtmResult[];
@@ -160,7 +162,7 @@ export default function DataTableResults({
                 },
             },
         ],
-        [],
+        [tresholds.saw, tresholds.wp],
     );
 
     const buildUrlWithParams = (params: Record<string, string | number | undefined>) => {
@@ -262,12 +264,18 @@ export default function DataTableResults({
             <div className="flex w-full flex-col justify-start gap-4">
                 <div className="relative flex flex-col gap-4 overflow-auto">
                     <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                        <div className="flex w-full justify-center gap-2 md:order-2 md:justify-end">
+                        <div className="flex w-full flex-col justify-center gap-4 md:order-2 md:flex-row md:justify-end md:gap-2">
                             <div className="flex-1 md:flex-none">
                                 <Button variant="outline" className="w-full" onClick={handleRetryCalculate}>
                                     <RefreshCcw />
                                     <span className="lg:inline">Hitung Ulang</span>
                                 </Button>
+                            </div>
+                            <div className="flex-1 md:flex-none">
+                                <FilterDialog />
+                            </div>
+                            <div className="flex-1 md:flex-none">
+                                <SensitivitasDialog />
                             </div>
                         </div>
 

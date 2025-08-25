@@ -51,13 +51,13 @@
     }
 
     .chip-ok {
-      background: #e7f6ef;
+      background: #05df72;
       padding: 3px 8px;
       border-radius: 4px;
     }
 
     .chip-warn {
-      background: #fff3cd;
+      background: #ffdf20;
       padding: 3px 8px;
       border-radius: 4px;
     }
