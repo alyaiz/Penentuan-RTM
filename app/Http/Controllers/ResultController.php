@@ -27,7 +27,7 @@ class ResultController extends Controller
         $status = $request->get('status');
         $search = $request->get('search');
 
-        $query = Rtm::withScores()->select('id', 'name', 'address');
+        $query = Rtm::withScores()->select('id', 'nik', 'name', 'address');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -280,9 +280,9 @@ class ResultController extends Controller
                 ];
             }
 
-            $filename = 'hasil-saw-wp-' . now()->format('Ymd_His') . '.xlsx';
+            $filename = 'hasil-saw-wp.xlsx';
 
-            return Excel::download(new SingleSheetArrayExport($head, $data, 'SAW & WP', $filters), $filename);
+            return Excel::download(new SingleSheetArrayExport($head, $data, $filters['metode'], $filters), $filename);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

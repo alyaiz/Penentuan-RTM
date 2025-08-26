@@ -6,7 +6,6 @@ class WelcomeController extends Controller
 {
     public function index()
     {
-        // data statis sementara (boleh kosong)
         $desa = (object)[
             'deskripsi'         => 'Selamat datang di portal desa.',
             'jumlah_kk'         => null,

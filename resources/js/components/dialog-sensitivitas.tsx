@@ -90,7 +90,7 @@ export default function SensitivitasDialog() {
                     <div className="flex flex-col items-center justify-center gap-4 text-center">
                         <Loader2 className="text-primary h-8 w-8 animate-spin" />
                         <div className="space-y-1 text-center">
-                            <p className="text-primary text-sm font-semibold">Sedang memproses hasil uji sensitivitas...</p>
+                            <p className="text-primary text-sm font-semibold">Sedang memproses hasil uji sensitivitas</p>
                             <span className="text-muted-foreground text-sm">Mohon tunggu, file sedang dibuat.</span>
                         </div>
                     </div>

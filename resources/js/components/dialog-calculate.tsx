@@ -53,9 +53,9 @@ export default function CalculationDialog({ open, onOpenChange, stats }: Calcula
     };
 
     const handleRefreshPage = () => {
-        onOpenChange(false);
-        setStatus('idle');
-        setErrorMessage('');
+        // onOpenChange(false);
+        // setStatus('idle');
+        // setErrorMessage('');
         window.location.reload();
     };
 

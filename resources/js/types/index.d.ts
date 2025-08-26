@@ -80,6 +80,7 @@ export interface Rtm {
 
 export interface RtmResult {
     id: number;
+    nik?: string;
     name: string;
     address?: string;
     saw: {

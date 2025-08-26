@@ -72,7 +72,7 @@
 </head>
 
 <body>
-  <h1>Hasil Perhitungan ({{ strtoupper($method ?? '-') }})</h1>
+  <h1>Hasil Perhitungan ({{ strtoupper($metode ?? '-') }})</h1>
   <div class="muted">
     Dicetak: {{ $printed_at ?? '-' }}
   </div>

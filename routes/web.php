@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\RtmController;
+use App\Http\Controllers\RtmImportController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
@@ -23,6 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('pengguna', UserController::class)->middleware(['is_super_admin']);
     Route::resource('rumah-tangga-miskin', RtmController::class);
+    Route::post('/rumah-tangga-miskin/import', [RtmImportController::class, 'import'])->name('rumah-tangga-miskin.import');
 
     Route::get('kriteria/ambil-bobot', [CriteriaController::class, 'getWeights']);
     Route::put('kriteria/update-bobot', [CriteriaController::class, 'updateWeights']);

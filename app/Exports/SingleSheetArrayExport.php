@@ -18,7 +18,7 @@ class SingleSheetArrayExport implements FromArray, WithHeadings, WithStyles, Wit
   protected $method;
   protected $filters;
 
-  public function __construct($headers, $data, $method = 'SAW & WP', $filters = [])
+  public function __construct($headers, $data, $method, $filters = [])
   {
     $this->headers = $headers;
     $this->data = $data;

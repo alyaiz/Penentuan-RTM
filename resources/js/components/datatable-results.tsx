@@ -97,6 +97,13 @@ export default function DataTableResults({
                 },
             },
             {
+                accessorKey: 'nik',
+                header: 'NIK',
+                cell: ({ row }) => {
+                    return <div className="text-foreground text-left">{row.original.nik ? row.original.nik : '-'}</div>;
+                },
+            },
+            {
                 accessorKey: 'alamat',
                 header: 'Alamat',
                 cell: ({ row }) => {
@@ -107,7 +114,7 @@ export default function DataTableResults({
                 accessorKey: 'SAW',
                 header: 'SAW',
                 cell: ({ row }) => {
-                    return <div className="text-foreground text-left">{row.original.saw.score ? row.original.saw.score : '-'}</div>;
+                    return <div className="text-foreground text-left">{row.original.saw?.score ?? '-'}</div>;
                 },
             },
             {
@@ -124,7 +131,7 @@ export default function DataTableResults({
                         <Badge
                             className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                             style={{
-                                backgroundColor: score >= tresholds.saw ? 'var(--chart-3)' : score < tresholds.saw ? 'var(--chart-1)' : undefined,
+                                backgroundColor: score >= tresholds.saw ? 'var(--chart-3)' : 'var(--chart-1)',
                             }}
                         >
                             {score < tresholds.saw ? 'Miskin' : 'Tidak Miskin'}
@@ -136,11 +143,11 @@ export default function DataTableResults({
                 accessorKey: 'WP',
                 header: 'WP',
                 cell: ({ row }) => {
-                    return <div className="text-foreground text-left">{row.original.wp?.score ? row.original.wp?.score : '-'}</div>;
+                    return <div className="text-foreground text-left">{row.original.wp?.score ?? '-'}</div>;
                 },
             },
             {
-                accessorKey: 'status wp',
+                accessorKey: 'status_wp',
                 header: 'Status WP',
                 cell: ({ row }) => {
                     const score = row.original.wp?.score;
@@ -151,12 +158,12 @@ export default function DataTableResults({
 
                     return (
                         <Badge
-                            className={`flex gap-1 px-1.5 text-white [&_svg]:size-3`}
+                            className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                             style={{
-                                backgroundColor: score >= tresholds.wp ? 'var(--chart-3)' : score < tresholds.wp ? 'var(--chart-1)' : undefined,
+                                backgroundColor: score >= tresholds.wp ? 'var(--chart-3)' : 'var(--chart-1)',
                             }}
                         >
-                            {score < tresholds.wp ? 'Miskin' : 'Tidak Miskin'}{' '}
+                            {score < tresholds.wp ? 'Miskin' : 'Tidak Miskin'}
                         </Badge>
                     );
                 },

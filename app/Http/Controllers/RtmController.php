@@ -117,4 +117,27 @@ class RtmController extends Controller
     {
         //
     }
+
+    public function exportFile(Request $request)
+    {
+        $example = $request->validate([
+            'name' => 'required|string|max:255',
+            'nik' => 'required|string|size:16|unique:rtms,nik',
+            'address' => 'nullable|string',
+            'penghasilan_id' => 'required|exists:criterias,id',
+            'pengeluaran_id' => 'required|exists:criterias,id',
+            'tempat_tinggal_id' => 'required|exists:criterias,id',
+            'status_kepemilikan_rumah_id' => 'required|exists:criterias,id',
+            'kondisi_rumah_id' => 'required|exists:criterias,id',
+            'aset_yang_dimiliki_id' => 'required|exists:criterias,id',
+            'transportasi_id' => 'required|exists:criterias,id',
+            'penerangan_rumah_id' => 'required|exists:criterias,id',
+        ]);
+
+        $example['user_id'] = Auth::id();
+
+        Rtm::create($example);
+
+        return redirect()->back()->with('rtms/create')->with('success', 'Data rumah tangga miskin berhasil ditambahkan.');
+    }
 }

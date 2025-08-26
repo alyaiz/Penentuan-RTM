@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Rtm } from '@/types';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
     ColumnDef,
     ColumnFiltersState,
@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import ExportDialog from './dialog-import';
 import { RtmCellViewer } from './rtm-cell-viewer';
 
 type DataTableProps = {
@@ -61,7 +62,6 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [sorting, setSorting] = useState<SortingState>([]);
-    const { url } = usePage();
 
     useEffect(() => {
         const urlSearch = getSearchFromUrl();
@@ -118,7 +118,7 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
                 ),
             },
         ],
-        [url],
+        [],
     );
 
     const buildUrlWithParams = (params: Record<string, string | number | undefined>) => {
@@ -216,7 +216,7 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
             <div className="flex w-full flex-col justify-start gap-4">
                 <div className="relative flex flex-col gap-4 overflow-auto">
                     <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                        <div className="flex w-full justify-center gap-2 md:order-2 md:justify-end">
+                        <div className="flex w-full flex-col justify-center gap-4 md:order-2 md:flex-row md:justify-end md:gap-2">
                             <div className="flex-1 md:flex-none">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -252,6 +252,10 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
                                         <span className="lg:inline">Tambah RTM</span>
                                     </Link>
                                 </Button>
+                            </div>
+
+                            <div className="flex-1 md:flex-none">
+                                <ExportDialog />
                             </div>
                         </div>
 
