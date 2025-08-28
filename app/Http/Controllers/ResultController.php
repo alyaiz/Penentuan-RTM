@@ -553,7 +553,7 @@ class ResultController extends Controller
                 ]
             ];
 
-            $filename = 'sensitivitas-saw-wp-' . now()->format('Ymd_His') . '.xlsx';
+            $filename = 'sensitivitas-saw-wp.xlsx';
 
             return Excel::download(new MultiSheetArrayExport($sheetsData), $filename);
         } catch (\Exception $e) {

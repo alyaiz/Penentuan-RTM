@@ -43,7 +43,12 @@ export default function SensitivitasDialog() {
                 const data = await response.json();
 
                 if (data.success && data.path) {
-                    window.open(data.path, '_blank');
+                    const link = document.createElement('a');
+                    link.href = data.path;
+                    link.setAttribute('download', 'sensitivitas-saw-wp.pdf');
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
                     setSuccess(true);
                 } else {
                     throw new Error(data.message || 'Gagal membuat file PDF');

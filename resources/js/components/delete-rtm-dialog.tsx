@@ -34,7 +34,7 @@ export default function DeleteRtmDialog({ rtm }: DeleteRtmDialogProps) {
                 });
             },
             onError: (err) => {
-                const errorMessage = err.message || 'Terjadi kesalahan saat menghapus pengguna.';
+                const errorMessage = err.message || 'Terjadi kesalahan saat menghapus rumah tangga miskin.';
                 const suggestion = err.suggestion || '';
 
                 toast.error('Gagal Menghapus', {
@@ -57,7 +57,7 @@ export default function DeleteRtmDialog({ rtm }: DeleteRtmDialogProps) {
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Hapus Pengguna?</AlertDialogTitle>
+                    <AlertDialogTitle>Hapus Rumah Tangga Miskin?</AlertDialogTitle>
                     <AlertDialogDescription>
                         Apakah kamu yakin ingin menghapus rumah tangga miskin dengan nama <strong>{rtm.name}</strong>? Tindakan ini tidak dapat dibatalkan.
                     </AlertDialogDescription>
