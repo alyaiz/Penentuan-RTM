@@ -100,16 +100,14 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                 header: 'Peran',
                 cell: ({ row }) => (
                     <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['super_admin', 'admin'].includes(row.original.role) ? 'text-black' : 'text-white'
-                        }`}
+                        className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                         style={{
                             backgroundColor:
                                 row.original.role === 'super_admin' ? 'var(--chart-1)' : row.original.role === 'admin' ? 'var(--chart-3)' : undefined,
                         }}
                     >
-                        {row.original.role === 'super_admin' && <UserRoundCheck className="text-black" />}
-                        {row.original.role === 'admin' && <UserRoundCheck className="text-black" />}
+                        {row.original.role === 'super_admin' && <UserRoundCheck />}
+                        {row.original.role === 'admin' && <UserRoundCheck />}
                         {
                             {
                                 super_admin: 'Super Admin',
@@ -124,9 +122,7 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                 header: 'Status',
                 cell: ({ row }) => (
                     <Badge
-                        className={`flex gap-1 px-1.5 [&_svg]:size-3 ${
-                            ['aktif', 'nonaktif'].includes(row.original.status) ? 'text-black' : 'text-white'
-                        }`}
+                        className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                         style={{
                             backgroundColor:
                                 row.original.status === 'aktif'
@@ -136,8 +132,8 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                                       : undefined,
                         }}
                     >
-                        {row.original.status === 'aktif' && <CheckCircle2 className="text-black" />}
-                        {row.original.status === 'nonaktif' && <CircleX className="text-black" />}
+                        {row.original.status === 'aktif' && <CheckCircle2 />}
+                        {row.original.status === 'nonaktif' && <CircleX />}
                         {
                             {
                                 aktif: 'Aktif',

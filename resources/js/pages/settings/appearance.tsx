@@ -7,7 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Tampilan', href: '/settings/appearance' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Tampilan', href: '/pengaturan/tampilan' }];
 
 export default function Appearance() {
     return (

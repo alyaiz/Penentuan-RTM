@@ -6,11 +6,11 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { type BreadcrumbItem } from '@/types';
-import { Transition } from '@headlessui/react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import { toast } from 'sonner';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Perhitungan', href: '/settings/calculate' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengaturan Perhitungan', href: '/pengaturan/hitung' }];
 
 type PageProps = {
     mcr_delta: number;
@@ -28,7 +28,7 @@ type CalculateForm = {
 export default function Calculate() {
     const { mcr_delta, threshold_saw, threshold_wp, flash } = usePage<PageProps>().props;
 
-    const { data, setData, put, errors, processing, recentlySuccessful } = useForm<CalculateForm>({
+    const { data, setData, put, errors, processing } = useForm<CalculateForm>({
         mcr_delta: String(mcr_delta ?? 0.05),
         threshold_saw: String(threshold_saw ?? 0.6),
         threshold_wp: String(threshold_wp ?? 0.7),
@@ -36,7 +36,20 @@ export default function Calculate() {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put('/settings/calculate');
+
+        put('/pengaturan/hitung', {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Berhasil Diperbarui', {
+                    description: 'Pengaturan perhitungan berhasil diperbarui.',
+                });
+            },
+            onError: () => {
+                toast.error('Gagal Diperbarui', {
+                    description: 'Terjadi kesalahan, periksa kembali nilai perhitungan yang dimasukkan.',
+                });
+            },
+        });
     };
 
     return (
@@ -106,16 +119,6 @@ export default function Calculate() {
                                 <Button type="submit" disabled={processing}>
                                     Simpan
                                 </Button>
-
-                                <Transition
-                                    show={recentlySuccessful}
-                                    enter="transition ease-in-out"
-                                    enterFrom="opacity-0"
-                                    leave="transition ease-in-out"
-                                    leaveTo="opacity-0"
-                                >
-                                    <p className="text-sm text-neutral-600">Tersimpan</p>
-                                </Transition>
                             </div>
                         </form>
                     </div>

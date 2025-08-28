@@ -3,25 +3,23 @@
 use App\Http\Controllers\Settings\CalculateController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
-use App\Http\Controllers\Settings\ThresholdController;
-use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
-    Route::redirect('settings', 'settings/profile');
+    Route::redirect('pengaturan', 'pengaturan/profile');
 
-    Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('pengaturan/profil', [ProfileController::class, 'edit'])->name('profil.edit');
+    Route::patch('pengaturan/profil', [ProfileController::class, 'update'])->name('profil.update');
+    Route::delete('pengaturan/profil', [ProfileController::class, 'destroy'])->name('profil.destroy');
 
-    Route::get('settings/calculate', [CalculateController::class, 'edit'])->name('calculate.edit');
-    Route::put('settings/calculate', [CalculateController::class, 'update'])->name('calculate.update');
+    Route::get('pengaturan/hitung', [CalculateController::class, 'edit'])->name('hitung.edit');
+    Route::put('pengaturan/hitung', [CalculateController::class, 'update'])->name('hitung.update');
 
-    Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
-    Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
+    Route::get('pengaturan/password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('pengaturan/password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::get('settings/appearance', function () {
+    Route::get('pengaturan/tampilan', function () {
         return Inertia::render('settings/appearance');
-    })->name('appearance');
+    })->name('tampilan');
 });

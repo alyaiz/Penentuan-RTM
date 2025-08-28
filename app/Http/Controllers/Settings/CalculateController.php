@@ -42,6 +42,6 @@ class CalculateController extends Controller
       );
     }
 
-    return to_route('calculate.edit');
+    return to_route('hitung.edit');
   }
 }
