@@ -19,19 +19,21 @@ export default function Rtms() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Rumah Tangga Miskin" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <Heading
-                    title="Manajemen Rumah Tangga Miskin"
-                    description="Kelola data rumah tangga miskin, ubah informasi, atau tambahkan data baru."
-                />
-                <DataTableRtms
-                    data={data}
-                    pageIndex={pageIndex}
-                    setPageIndex={setPageIndex}
-                    totalPages={last_page}
-                    totalItems={total}
-                    perPage={per_page}
-                />
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                    <Heading
+                        title="Manajemen Rumah Tangga Miskin"
+                        description="Kelola data rumah tangga miskin, ubah informasi, atau tambahkan data baru."
+                    />
+                    <DataTableRtms
+                        data={data}
+                        pageIndex={pageIndex}
+                        setPageIndex={setPageIndex}
+                        totalPages={last_page}
+                        totalItems={total}
+                        perPage={per_page}
+                    />
+                </div>
             </div>
         </AppLayout>
     );

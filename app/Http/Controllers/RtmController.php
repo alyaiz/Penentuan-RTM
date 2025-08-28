@@ -7,6 +7,7 @@ use App\Models\Criteria;
 use App\Models\Rtm;
 use App\Models\Saw;
 use App\Models\Wp;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -115,29 +116,22 @@ class RtmController extends Controller
 
     public function destroy(string $id)
     {
-        //
-    }
+        $rtm = Rtm::find($id);
 
-    public function exportFile(Request $request)
-    {
-        $example = $request->validate([
-            'name' => 'required|string|max:255',
-            'nik' => 'required|string|size:16|unique:rtms,nik',
-            'address' => 'nullable|string',
-            'penghasilan_id' => 'required|exists:criterias,id',
-            'pengeluaran_id' => 'required|exists:criterias,id',
-            'tempat_tinggal_id' => 'required|exists:criterias,id',
-            'status_kepemilikan_rumah_id' => 'required|exists:criterias,id',
-            'kondisi_rumah_id' => 'required|exists:criterias,id',
-            'aset_yang_dimiliki_id' => 'required|exists:criterias,id',
-            'transportasi_id' => 'required|exists:criterias,id',
-            'penerangan_rumah_id' => 'required|exists:criterias,id',
-        ]);
+        if (!$rtm) {
+            return redirect()->back()->withErrors([
+                'message' => 'Rumah tangga miskin tidak ditemukan.',
+            ]);
+        }
 
-        $example['user_id'] = Auth::id();
+        try {
+            $rtm->delete();
 
-        Rtm::create($example);
-
-        return redirect()->back()->with('rtms/create')->with('success', 'Data rumah tangga miskin berhasil ditambahkan.');
+            return redirect()->back()->with('success', 'Data rumah tangga miskin berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors([
+                'message' => 'Terjadi kesalahan saat menghapus rumah tangga miskin.',
+            ]);
+        }
     }
 }

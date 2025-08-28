@@ -19,19 +19,10 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import {
-    ChevronDownIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ChevronsLeftIcon,
-    ChevronsRightIcon,
-    ColumnsIcon,
-    Pen,
-    PlusIcon,
-    Trash,
-} from 'lucide-react';
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon, ColumnsIcon, Pen, PlusIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import DeleteRtmDialog from './delete-rtm-dialog';
 import ExportDialog from './dialog-import';
 import { RtmCellViewer } from './rtm-cell-viewer';
 
@@ -110,10 +101,11 @@ export default function DataTableRtms({ data, pageIndex, setPageIndex, totalPage
                                 <span className="sr-only">Tombol edit rumah tangga miskin</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
+                        {/* <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
                             <Trash className="size-3" />
                             <span className="sr-only">Tombol hapus rumah tangga miskin</span>
-                        </Button>
+                        </Button> */}
+                        <DeleteRtmDialog rtm={row.original} />
                     </div>
                 ),
             },

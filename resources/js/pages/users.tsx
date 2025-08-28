@@ -19,16 +19,18 @@ export default function Users() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pengguna" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <Heading title="Manajemen Pengguna" description="Kelola data pengguna, ubah informasi akun, atau tambahkan pengguna baru." />
-                <DataTableUsers
-                    data={data}
-                    pageIndex={pageIndex}
-                    setPageIndex={setPageIndex}
-                    totalPages={last_page}
-                    totalItems={total}
-                    perPage={per_page}
-                />
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                    <Heading title="Manajemen Pengguna" description="Kelola data pengguna, ubah informasi akun, atau tambahkan pengguna baru." />
+                    <DataTableUsers
+                        data={data}
+                        pageIndex={pageIndex}
+                        setPageIndex={setPageIndex}
+                        totalPages={last_page}
+                        totalItems={total}
+                        perPage={per_page}
+                    />
+                </div>
             </div>
         </AppLayout>
     );

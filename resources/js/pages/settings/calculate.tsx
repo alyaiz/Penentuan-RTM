@@ -42,83 +42,85 @@ export default function Calculate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pengaturan Perhitungan" />
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+                <SettingsLayout>
+                    <div className="space-y-6">
+                        <HeadingSmall title="Variabel Perhitungan" description="Atur ambang klasifikasi, delta MCR, dan threshold metode SAW & WP." />
 
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Variabel Perhitungan" description="Atur ambang klasifikasi, delta MCR, dan threshold metode SAW & WP." />
+                        {flash?.success && (
+                            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-600">
+                                {flash.success}
+                            </div>
+                        )}
 
-                    {flash?.success && (
-                        <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-600">{flash.success}</div>
-                    )}
+                        <form onSubmit={submit} className="grid max-w-xl gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="mcr_delta">Delta MCR (±)</Label>
+                                <Input
+                                    id="mcr_delta"
+                                    type="number"
+                                    step="any"
+                                    min={0}
+                                    max={0.5}
+                                    value={data.mcr_delta}
+                                    onChange={(e) => setData('mcr_delta', e.target.value)}
+                                    placeholder="0.05"
+                                />
+                                <InputError message={errors.mcr_delta} />
+                                <p className="text-muted-foreground text-xs">Misal 0.05 berarti uji sensitivitas di ±5%.</p>
+                            </div>
 
-                    <form onSubmit={submit} className="grid max-w-xl gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="mcr_delta">Delta MCR (±)</Label>
-                            <Input
-                                id="mcr_delta"
-                                type="number"
-                                step="0.01"
-                                min={0}
-                                max={0.5}
-                                value={data.mcr_delta}
-                                onChange={(e) => setData('mcr_delta', e.target.value)}
-                                placeholder="0.05"
-                            />
-                            <InputError message={errors.mcr_delta} />
-                            <p className="text-muted-foreground text-xs">Misal 0.05 berarti uji sensitivitas di ±5%.</p>
-                        </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="threshold_saw">Threshold SAW</Label>
+                                <Input
+                                    id="threshold_saw"
+                                    type="number"
+                                    step="any"
+                                    min={0}
+                                    max={1}
+                                    value={data.threshold_saw}
+                                    onChange={(e) => setData('threshold_saw', e.target.value)}
+                                    placeholder="0.60"
+                                />
+                                <InputError message={errors.threshold_saw} />
+                                <p className="text-muted-foreground text-xs">Ambang batas untuk metode Simple Additive Weighting (SAW).</p>
+                            </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="threshold_saw">Threshold SAW</Label>
-                            <Input
-                                id="threshold_saw"
-                                type="number"
-                                step="0.01"
-                                min={0}
-                                max={1}
-                                value={data.threshold_saw}
-                                onChange={(e) => setData('threshold_saw', e.target.value)}
-                                placeholder="0.60"
-                            />
-                            <InputError message={errors.threshold_saw} />
-                            <p className="text-muted-foreground text-xs">Ambang batas untuk metode Simple Additive Weighting (SAW).</p>
-                        </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="threshold_wp">Threshold WP</Label>
+                                <Input
+                                    id="threshold_wp"
+                                    type="number"
+                                    step="any"
+                                    min={0}
+                                    max={1}
+                                    value={data.threshold_wp}
+                                    onChange={(e) => setData('threshold_wp', e.target.value)}
+                                    placeholder="0.70"
+                                />
+                                <InputError message={errors.threshold_wp} />
+                                <p className="text-muted-foreground text-xs">Ambang batas untuk metode Weighted Product (WP).</p>
+                            </div>
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="threshold_wp">Threshold WP</Label>
-                            <Input
-                                id="threshold_wp"
-                                type="number"
-                                step="0.01"
-                                min={0}
-                                max={1}
-                                value={data.threshold_wp}
-                                onChange={(e) => setData('threshold_wp', e.target.value)}
-                                placeholder="0.70"
-                            />
-                            <InputError message={errors.threshold_wp} />
-                            <p className="text-muted-foreground text-xs">Ambang batas untuk metode Weighted Product (WP).</p>
-                        </div>
+                            <div className="flex items-center gap-4">
+                                <Button type="submit" disabled={processing}>
+                                    Simpan
+                                </Button>
 
-                        <div className="flex items-center gap-4">
-                            <Button type="submit" disabled={processing}>
-                                Simpan
-                            </Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm text-neutral-600">Tersimpan</p>
-                            </Transition>
-                        </div>
-                    </form>
-                </div>
-
-            </SettingsLayout>
+                                <Transition
+                                    show={recentlySuccessful}
+                                    enter="transition ease-in-out"
+                                    enterFrom="opacity-0"
+                                    leave="transition ease-in-out"
+                                    leaveTo="opacity-0"
+                                >
+                                    <p className="text-sm text-neutral-600">Tersimpan</p>
+                                </Transition>
+                            </div>
+                        </form>
+                    </div>
+                </SettingsLayout>
+            </div>
         </AppLayout>
     );
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ArrayExport;
 use App\Exports\MultiSheetArrayExport;
 use App\Exports\SingleSheetArrayExport;
 use App\Models\Rtm;
@@ -32,7 +31,8 @@ class ResultController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('address', 'like', '%' . $search . '%');
+                    ->orWhere('address', 'like', '%' . $search . '%')
+                    ->orWhere('nik', 'like', '%' . $search . '%');
             });
         }
 

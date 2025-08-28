@@ -287,7 +287,7 @@ export default function DataTableResults({
                         </div>
 
                         <Input
-                            placeholder="Cari nama atau alamat..."
+                            placeholder="Cari nama, NIK, atau alamat..."
                             value={searchValue}
                             onChange={handleSearchChange}
                             className="max-w-sm md:order-1"

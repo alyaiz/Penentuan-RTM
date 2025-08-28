@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('saws', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('rtm_id')->constrained();
+            $table->foreignId('rtm_id')->constrained()->onDelete('cascade');
             $table->decimal('score', 12, 10);
             $table->timestamps();
         });

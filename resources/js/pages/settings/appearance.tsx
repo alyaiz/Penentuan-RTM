@@ -13,14 +13,15 @@ export default function Appearance() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Pengaturan Tampilan" />
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+                <SettingsLayout>
+                    <div className="space-y-6">
+                        <HeadingSmall title="Pengaturan Tampilan" description="Perbarui pengaturan tampilan akun Anda" />
 
-            <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Pengaturan Tampilan" description="Perbarui pengaturan tampilan akun Anda" />
-
-                    <AppearanceTabs />
-                </div>
-            </SettingsLayout>
+                        <AppearanceTabs />
+                    </div>
+                </SettingsLayout>
+            </div>
         </AppLayout>
     );
 }

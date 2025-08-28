@@ -1,47 +1,49 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\PublicResultController;
-use App\Http\Controllers\Admin\ProfileController;
-use App\Http\Controllers\Admin\KriteriaController;
-use App\Http\Controllers\Admin\HasilController;
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CriteriaController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\ResultPublicController;
 use App\Http\Controllers\RtmController;
 use App\Http\Controllers\RtmImportController;
 use App\Http\Controllers\UserController;
 
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
-Route::get('/publik/hasil', [PublicResultController::class, 'index'])->name('public.hasil');
-Route::get('/publik/hasil/pdf', [PublicResultController::class, 'exportPdf'])->name('public.hasil.pdf');
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
+
+Route::prefix('publik')->name('public.')->group(function () {
+    Route::get('/hasil/pdf', [ResultPublicController::class, 'exportPdf'])->name('hasil.pdf');
+    Route::get('/hasil/excel', [ResultPublicController::class, 'exportExcel'])->name('hasil.excel');
+    Route::resource('hasil', ResultPublicController::class);
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('pengguna', UserController::class)->middleware(['is_super_admin']);
+
     Route::resource('rumah-tangga-miskin', RtmController::class);
     Route::post('/rumah-tangga-miskin/import', [RtmImportController::class, 'import'])->name('rumah-tangga-miskin.import');
 
-    Route::get('kriteria/ambil-bobot', [CriteriaController::class, 'getWeights']);
-    Route::put('kriteria/update-bobot', [CriteriaController::class, 'updateWeights']);
+    Route::prefix('kriteria')->name('kriteria.')->group(function () {
+        Route::get('ambil-bobot', [CriteriaController::class, 'getWeights'])->name('kriteria.ambil-bobot');
+        Route::put('update-bobot', [CriteriaController::class, 'updateWeights'])->name('kriteria.update-bobot');
+    });
     Route::resource('kriteria', CriteriaController::class);
 
-    Route::get('/hasil', [ResultController::class, 'index'])->name('hasil.index');
-    Route::post('/hasil/hitung', [ResultController::class, 'calculateResults'])->name('hasil.hitung');
-    Route::get('/hasil/pdf', [ResultController::class, 'exportPdf'])->name('hasil.pdf');
-    Route::get('/hasil/excel', [ResultController::class, 'exportExcel'])->name('hasil.excel');
-    Route::get('/hasil/sensitivitas/pdf', [ResultController::class, 'exportMcrPdf'])->name('hasil.sensitivitas.pdf');
-    Route::get('/hasil/sensitivitas/excel', [ResultController::class, 'exportMcrExcel'])->name('hasil.sensitivitas.excel');
+    Route::prefix('hasil')->name('hasil.')->group(function () {
+        Route::post('/hitung', [ResultController::class, 'calculateResults'])->name('hitung');
+        Route::get('/pdf', [ResultController::class, 'exportPdf'])->name('pdf');
+        Route::get('/excel', [ResultController::class, 'exportExcel'])->name('excel');
 
-    // Route::get('/hasil/sensitivitas', [HasilController::class, 'sensitivitas'])->name('hasil.sens');
-    // Route::get('/hasil/mcr/pdf', [HasilController::class, 'exportMCRPDF'])->name('hasil.mcr.pdf');
-    // Route::get('/hasil/mcr/excel', [HasilController::class, 'exportMCRExcel'])->name('hasil.mcr.excel');
-
-    Route::get('/result', [HasilController::class, 'index'])->name('result.index');
+        Route::prefix('sensitivitas')->name('sensitivitas.')->group(function () {
+            Route::get('/pdf', [ResultController::class, 'exportMcrPdf'])->name('pdf');
+            Route::get('/excel', [ResultController::class, 'exportMcrExcel'])->name('excel');
+        });
+    });
+    Route::resource('hasil', ResultController::class);
 });
 
 require __DIR__ . '/settings.php';

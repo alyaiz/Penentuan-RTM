@@ -10,7 +10,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { NavItem, type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { HousePlug, LayoutGrid, ListCheck, ListOrdered, Menu, User } from 'lucide-react';
+import { HousePlug, LayoutGrid, ListCheck, ListOrdered, Menu, User, User2 } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import AppearanceToggleDropdown from './appearance-dropdown';
@@ -57,10 +57,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     return (
         <>
-            <div className="border-sidebar-border/80 border-b">
+            <div className="border-sidebar-border/80 bg-background w-full border-b">
                 <div className="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                     {/* Mobile Menu */}
-                    <div className="lg:hidden">
+                    <div className="md:hidden">
                         <Sheet>
                             <SheetTrigger asChild>
                                 <Button variant="ghost" size="icon" className="mr-2 h-[34px] w-[34px]">
@@ -70,7 +70,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <SheetContent side="left" className="bg-sidebar flex h-full w-64 flex-col items-stretch justify-between">
                                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                    <div className="flex aspect-square size-8 items-center justify-center rounded-md">
+                                        <AppLogoIcon />
+                                    </div>
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
@@ -94,7 +96,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                         ))}
                                                 </>
                                             ) : (
-                                                <></>
+                                                <Link href="/publik/hasil" className="flex items-center space-x-2 text-sm font-medium">
+                                                    <User2 className="h-5 w-5" />
+                                                    <span>Data Penduduk Miskin</span>
+                                                </Link>
                                             )}
                                         </div>
                                     </div>
@@ -103,12 +108,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/" prefetch className="flex items-center space-x-2">
+                    <Link href="/" className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
+                    <div className="ml-6 hidden h-full items-center space-x-6 md:flex">
                         <NavigationMenu className="flex h-full items-stretch">
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {auth.user ? (
@@ -137,35 +142,41 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 </NavigationMenuItem>
                                             ))}
                                     </>
-                                ) : (
-                                    <></>
-                                )}
+                                ) : null}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
 
                     <div className="ml-auto flex items-center space-x-2">
-                        <AppearanceToggleDropdown />
                         {auth.user ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="size-10 rounded-full p-1">
-                                        <Avatar className="size-8 overflow-hidden rounded-full">
-                                            <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
-                                            <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                {getInitials(auth.user.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-56" align="end">
-                                    <UserMenuContent user={auth.user} />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <>
+                                <AppearanceToggleDropdown />
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="size-10 rounded-full p-1">
+                                            <Avatar className="size-8 overflow-hidden rounded-full">
+                                                <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                                    {getInitials(auth.user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-56" align="end">
+                                        <UserMenuContent user={auth.user} />
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
                         ) : (
-                            <Button asChild>
-                                <Link href="/login">Login</Link>
-                            </Button>
+                            <>
+                                <Link href="/publik/hasil" className="hidden items-center space-x-2 text-sm font-medium md:flex">
+                                    <span>Data Penduduk Miskin</span>
+                                </Link>
+                                <AppearanceToggleDropdown />
+                                <Button asChild>
+                                    <Link href="/login">Login</Link>
+                                </Button>
+                            </>
                         )}
                     </div>
                 </div>

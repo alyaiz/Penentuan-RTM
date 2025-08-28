@@ -88,47 +88,49 @@ export default function CreateRtm({ criterias }: CreateRtmProps) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Tambah Data Rumah Tangga Miskin" />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <Heading title="Tambah Data Rumah Tangga Miskin" description="Lengkapi formulir berikut untuk menambahkan data." />
+            <Head title="Tambah Data Rumah Tangga Miskin" />{' '}
+            <div className="mx-auto mt-16 flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+                <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                    <Heading title="Tambah Data Rumah Tangga Miskin" description="Lengkapi formulir berikut untuk menambahkan data." />
 
-                <form onSubmit={handleCreate} className="grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2">
-                    {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
-                    {renderInputField('NIK', 'nik', 'Masukkan Nomor Induk Kependudukan')}
+                    <form onSubmit={handleCreate} className="grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2">
+                        {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
+                        {renderInputField('NIK', 'nik', 'Masukkan Nomor Induk Kependudukan')}
 
-                    <div className="grid gap-2 md:col-span-2">
-                        <Label htmlFor="address">Alamat</Label>
-                        <Textarea
-                            id="address"
-                            placeholder="Masukkan alamat lengkap sesuai domisili"
-                            value={data.address}
-                            onChange={(e) => setData('address', e.target.value)}
-                        />
-                        {errors.address && <p className="text-destructive text-sm">{errors.address}</p>}
-                    </div>
+                        <div className="grid gap-2 md:col-span-2">
+                            <Label htmlFor="address">Alamat</Label>
+                            <Textarea
+                                id="address"
+                                placeholder="Masukkan alamat lengkap sesuai domisili"
+                                value={data.address}
+                                onChange={(e) => setData('address', e.target.value)}
+                            />
+                            {errors.address && <p className="text-destructive text-sm">{errors.address}</p>}
+                        </div>
 
-                    {renderCriteriaSelect('Penghasilan', 'penghasilan_id', criterias.penghasilan)}
-                    {renderCriteriaSelect('Pengeluaran', 'pengeluaran_id', criterias.pengeluaran)}
-                    {renderCriteriaSelect('Tempat Tinggal', 'tempat_tinggal_id', criterias.tempat_tinggal)}
-                    {renderCriteriaSelect('Status Kepemilikan Rumah', 'status_kepemilikan_rumah_id', criterias.status_kepemilikan_rumah)}
-                    {renderCriteriaSelect('Kondisi Rumah', 'kondisi_rumah_id', criterias.kondisi_rumah)}
-                    {renderCriteriaSelect('Aset yang Dimiliki', 'aset_yang_dimiliki_id', criterias.aset_yang_dimiliki)}
-                    {renderCriteriaSelect('Transportasi', 'transportasi_id', criterias.transportasi)}
-                    {renderCriteriaSelect('Penerangan Rumah', 'penerangan_rumah_id', criterias.penerangan_rumah)}
+                        {renderCriteriaSelect('Penghasilan', 'penghasilan_id', criterias.penghasilan)}
+                        {renderCriteriaSelect('Pengeluaran', 'pengeluaran_id', criterias.pengeluaran)}
+                        {renderCriteriaSelect('Tempat Tinggal', 'tempat_tinggal_id', criterias.tempat_tinggal)}
+                        {renderCriteriaSelect('Status Kepemilikan Rumah', 'status_kepemilikan_rumah_id', criterias.status_kepemilikan_rumah)}
+                        {renderCriteriaSelect('Kondisi Rumah', 'kondisi_rumah_id', criterias.kondisi_rumah)}
+                        {renderCriteriaSelect('Aset yang Dimiliki', 'aset_yang_dimiliki_id', criterias.aset_yang_dimiliki)}
+                        {renderCriteriaSelect('Transportasi', 'transportasi_id', criterias.transportasi)}
+                        {renderCriteriaSelect('Penerangan Rumah', 'penerangan_rumah_id', criterias.penerangan_rumah)}
 
-                    <div className="flex justify-end pt-2 md:col-span-2">
-                        <Button type="submit" disabled={processing} className="w-full">
-                            {processing ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Menyimpan...
-                                </>
-                            ) : (
-                                'Simpan'
-                            )}
-                        </Button>
-                    </div>
-                </form>
+                        <div className="flex justify-end pt-2 md:col-span-2">
+                            <Button type="submit" disabled={processing} className="w-full">
+                                {processing ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Menyimpan...
+                                    </>
+                                ) : (
+                                    'Simpan'
+                                )}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </AppLayout>
     );

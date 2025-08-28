@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Rtm;
 use App\Models\Criteria;
+use App\Models\Setting;
 
 class DashboardController extends Controller
 {
@@ -20,57 +21,29 @@ class DashboardController extends Controller
 
     public function index()
     {
-        // $admins = User::count();
-        // $rtms = Rtm::withAllCriteria()->get();
-        // $kk = $rtms->count();
+        $userCount = User::count();
+        $rtmCount = Rtm::count();
+        
+        $settings = Setting::whereIn('key', ['threshold_saw', 'threshold_wp'])->pluck('value', 'key');
 
-        // $w = $this->weights();
-        // $threshold = class_exists(\App\Models\Setting::class)
-        //     ? (float) \App\Models\Setting::get('sawwp_threshold', config('sawwp.threshold', 0.5))
-        //     : (float) config('sawwp.threshold', 0.5);
+        $thresholdSaw = (float) ($settings['threshold_saw'] ?? 0);
+        $rtmPoorSawCount = Rtm::whereHas('saw', function ($q) use ($thresholdSaw) {
+            $q->where('score', '<', $thresholdSaw);
+        })->count();
 
-        // $wpProducts = [];
-        // $scales = [];
-        // foreach ($rtms as $r) {
-        //     $s = [
-        //         'penghasilan' => (float) ($r->penghasilanCriteria->scale ?? 0),
-        //         'pengeluaran' => (float) ($r->pengeluaranCriteria->scale ?? 0),
-        //         'tempat_tinggal' => (float) ($r->tempatTinggalCriteria->scale ?? 0),
-        //         'status_kepemilikan_rumah' => (float) ($r->statusKepemilikanRumahCriteria->scale ?? 0),
-        //         'kondisi_rumah' => (float) ($r->kondisiRumahCriteria->scale ?? 0),
-        //         'aset_yang_dimiliki' => (float) ($r->asetYangDimilikiCriteria->scale ?? 0),
-        //         'transportasi' => (float) ($r->transportasiCriteria->scale ?? 0),
-        //         'penerangan_rumah' => (float) ($r->peneranganRumahCriteria->scale ?? 0),
-        //     ];
-        //     $scales[] = $s;
+        $thresholdWp = (float) ($settings['threshold_wp'] ?? 0);
+        $rtmPoorWpCount = Rtm::whereHas('wp', function ($q) use ($thresholdWp) {
+            $q->where('score', '<', $thresholdWp);
+        })->count();
 
-        //     $wpRaw = 1.0;
-        //     foreach ($s as $k => $v) $wpRaw *= pow($v > 0 ? $v : 0.0001, ($w[$k] ?? 0.0));
-        //     $wpProducts[] = $wpRaw;
-        // }
 
-        // $sumWp = array_sum($wpProducts) ?: 1.0;
-        // $kkMiskin = 0;
-
-        // foreach ($scales as $s) {
-        //     $saw = 0.0;
-        //     foreach ($s as $k => $v) $saw += $v * ($w[$k] ?? 0.0);
-
-        //     $wpRaw = 1.0;
-        //     foreach ($s as $k => $v) $wpRaw *= pow($v > 0 ? $v : 0.0001, ($w[$k] ?? 0.0));
-        //     $wp = $wpRaw / $sumWp;
-
-        //     if ($saw >= $threshold || $wp >= $threshold) $kkMiskin++;
-        // }
-
-        // return Inertia::render('dashboard', [
-        //     'stats' => [
-        //         'admins' => $admins,
-        //         'kk' => $kk,
-        //         'kk_miskin' => $kkMiskin,
-        //     ],
-        // ]);'
-
-        return Inertia::render('dashboard');
+        return Inertia::render('dashboard', [
+            'stats' => [
+                'user' => $userCount,
+                'kk' => $rtmCount,
+                'kk_miskin_saw' => $rtmPoorSawCount,
+                'kk_miskin_wp' => $rtmPoorWpCount,
+            ],
+        ]);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
+
 class WelcomeController extends Controller
 {
     public function index()
@@ -13,6 +15,6 @@ class WelcomeController extends Controller
             'hero_image'        => null,
         ];
 
-        return view('public.welcome', compact('desa'));
+        return Inertia::render('welcome');
     }
 }
