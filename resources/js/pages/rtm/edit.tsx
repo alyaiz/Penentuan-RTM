@@ -90,9 +90,9 @@ export default function EditRtm({ criterias, rtm }: EditRtmProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Tambah Data Rumah Tangga Miskin" />{' '}
-            <div className="mx-auto mt-16 flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
+            <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                    <Heading title="Tambah Data Rumah Tangga Miskin" description="Lengkapi formulir berikut untuk menambahkan data." />
+                    <Heading title="Edit Data Rumah Tangga Miskin" description="Ubah formulir berikut untuk mengedit data." />
 
                     <form onSubmit={handleCreate} className="grid grid-cols-1 gap-4 rounded-md border p-4 md:grid-cols-2">
                         {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
