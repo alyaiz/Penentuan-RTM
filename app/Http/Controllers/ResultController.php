@@ -104,6 +104,7 @@ class ResultController extends Controller
     {
         try {
             $rtms = Rtm::withAllCriteria()->get();
+            $precision = 5;
 
             $maxCriteriaScales = [
                 'penghasilan' => (string) ($rtms->max(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
@@ -116,7 +117,18 @@ class ResultController extends Controller
                 'penerangan' => (string) ($rtms->max(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
             ];
 
-            $sawResults = $rtms->map(function ($rtm) use ($maxCriteriaScales) {
+            $minCriteriaScales = [
+                'penghasilan' => (string) ($rtms->min(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
+                'pengeluaran' => (string) ($rtms->min(fn($rtm) => $rtm->pengeluaranCriteria->scale ?? 0)),
+                'tempat_tinggal' => (string) ($rtms->min(fn($rtm) => $rtm->tempatTinggalCriteria->scale ?? 0)),
+                'status_kepemilikan_rumah' => (string) ($rtms->min(fn($rtm) => $rtm->statusKepemilikanRumahCriteria->scale ?? 0)),
+                'kondisi_rumah' => (string) ($rtms->min(fn($rtm) => $rtm->kondisiRumahCriteria->scale ?? 0)),
+                'aset' => (string) ($rtms->min(fn($rtm) => $rtm->asetYangDimilikiCriteria->scale ?? 0)),
+                'transportasi' => (string) ($rtms->min(fn($rtm) => $rtm->transportasiCriteria->scale ?? 0)),
+                'penerangan' => (string) ($rtms->min(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
+            ];
+
+            $sawResults = $rtms->map(function ($rtm) use ($maxCriteriaScales, $minCriteriaScales, $precision) {
                 $criteriaScales = collect([
                     'penghasilan' => (string) ($rtm->penghasilanCriteria->scale ?? '0'),
                     'pengeluaran' => (string) ($rtm->pengeluaranCriteria->scale ?? '0'),
@@ -139,26 +151,44 @@ class ResultController extends Controller
                     'penerangan' => (string) ($rtm->peneranganRumahCriteria->weight ?? '0'),
                 ]);
 
-                $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales) {
+
+                $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales, $minCriteriaScales, $precision) {
+                    if ($key === 'pengeluaran') {
+                        $minScale = $minCriteriaScales[$key] ?? '1';
+                        $result = bccomp($minScale, '0',  $precision) > 0
+                            ? bcdiv($minScale, $scale,  $precision)
+                            : '0';
+
+                        return $result;
+                    }
+
                     $maxScale = $maxCriteriaScales[$key] ?? '1';
-                    return bccomp($maxScale, '0', 5) > 0
-                        ? bcdiv($scale, $maxScale, 5)
+                    $result = bccomp($maxScale, '0',  $precision) > 0
+                        ? bcdiv($scale, $maxScale,  $precision)
                         : '0';
+
+                    return $result;
                 });
 
                 $vektorS = $criteriaScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
                     $weight = (float) ($criteriaWeights[$key] ?? 0);
                     $originalValue = (float) $value;
                     $safeValue = $originalValue > 0 ? $originalValue : 0.0001;
-                    $powered = pow($safeValue, $weight);
+
+                    if ($key === 'pengeluaran') {
+                        $powered = pow($safeValue, -$weight);
+                    } else {
+                        $powered = pow($safeValue, $weight);
+                    }
+
                     return $carry * $powered;
                 }, 1.0);
 
-                $vektorSFormatted = number_format($vektorS, 5, '.', '');
+                $vektorSFormatted = number_format($vektorS, $precision, '.', '');
 
-                $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
-                    $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 5);
-                    return bcadd($carry, $weighted, 5);
+                $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights, $precision) {
+                    $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', $precision);
+                    return bcadd($carry, $weighted, $precision);
                 }, '0');
 
                 Saw::updateOrCreate(
@@ -178,11 +208,11 @@ class ResultController extends Controller
                 return (float) str_replace(',', '', $result['vektor_s']);
             });
 
-            $wpResults = $sawResults->map(function ($result) use ($totalVektorS) {
+            $wpResults = $sawResults->map(function ($result) use ($totalVektorS, $precision) {
                 $vektorSFloat = (float) str_replace(',', '', $result['vektor_s']);
                 $vektorSString = (string) $vektorSFloat;
-                $wpScore = bccomp($totalVektorS, '0', 5) > 0
-                    ? bcdiv($vektorSString, $totalVektorS, 5)
+                $wpScore = bccomp($totalVektorS, '0', $precision) > 0
+                    ? bcdiv($vektorSString, $totalVektorS, $precision)
                     : '0';
 
                 Wp::updateOrCreate(
@@ -614,6 +644,18 @@ class ResultController extends Controller
             'penerangan' => (string) ($rtms->max(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
         ];
 
+        // Dapatkan min criteria scales
+        $minCriteriaScales = [
+            'penghasilan' => (string) ($rtms->min(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
+            'pengeluaran' => (string) ($rtms->min(fn($rtm) => $rtm->pengeluaranCriteria->scale ?? 0)),
+            'tempat_tinggal' => (string) ($rtms->min(fn($rtm) => $rtm->tempatTinggalCriteria->scale ?? 0)),
+            'status_kepemilikan_rumah' => (string) ($rtms->min(fn($rtm) => $rtm->statusKepemilikanRumahCriteria->scale ?? 0)),
+            'kondisi_rumah' => (string) ($rtms->min(fn($rtm) => $rtm->kondisiRumahCriteria->scale ?? 0)),
+            'aset' => (string) ($rtms->min(fn($rtm) => $rtm->asetYangDimilikiCriteria->scale ?? 0)),
+            'transportasi' => (string) ($rtms->min(fn($rtm) => $rtm->transportasiCriteria->scale ?? 0)),
+            'penerangan' => (string) ($rtms->min(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
+        ];
+
         // Ambil bobot asli dari RTM pertama sebagai referensi
         $firstRtm = $rtms->first();
         $originalWeights = [
@@ -628,7 +670,7 @@ class ResultController extends Controller
         ];
 
         // 3. Hitung baseline scores dengan bobot asli untuk konsistensi
-        $baselineResults = $this->calculateMcr($rtms, $maxCriteriaScales, $originalWeights);
+        $baselineResults = $this->calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $originalWeights);
         $sawMaxScore = $baselineResults['saw_max'];
         $wpMaxScore = $baselineResults['wp_max'];
 
@@ -654,7 +696,7 @@ class ResultController extends Controller
                 }
 
                 // Hitung scores dengan bobot yang dimodifikasi
-                $modifiedResults = $this->calculateMcr($rtms, $maxCriteriaScales, $modifiedWeights);
+                $modifiedResults = $this->calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $modifiedWeights);
 
                 $sawDifference = bcsub((string) $modifiedResults['saw_max'], (string) $sawMaxScore, 5);
                 $wpDifference = bcsub((string) $modifiedResults['wp_max'], (string) $wpMaxScore, 5);
@@ -671,9 +713,11 @@ class ResultController extends Controller
         return $sensitivityResults;
     }
 
-    private function calculateMcr($rtms, $maxCriteriaScales, $weights)
+    private function calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $weights)
     {
-        $sawResults = $rtms->map(function ($rtm) use ($maxCriteriaScales, $weights) {
+        $precision = 5;
+
+        $sawResults = $rtms->map(function ($rtm) use ($maxCriteriaScales, $minCriteriaScales,  $weights, $precision) {
             $criteriaScales = collect([
                 'penghasilan' => (string) ($rtm->penghasilanCriteria->scale ?? '0'),
                 'pengeluaran' => (string) ($rtm->pengeluaranCriteria->scale ?? '0'),
@@ -696,27 +740,44 @@ class ResultController extends Controller
                 'penerangan' => (string) $weights['penerangan'],
             ]);
 
-            $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales) {
+            $normalizedScales = $criteriaScales->map(function ($scale, $key) use ($maxCriteriaScales, $minCriteriaScales, $precision) {
+                if ($key === 'pengeluaran') {
+                    $minScale = $minCriteriaScales[$key] ?? '1';
+                    $result = bccomp($minScale, '0',  $precision) > 0
+                        ? bcdiv($minScale, $scale,  $precision)
+                        : '0';
+
+                    return $result;
+                }
+
                 $maxScale = $maxCriteriaScales[$key] ?? '1';
-                return bccomp($maxScale, '0', 5) > 0
-                    ? bcdiv($scale, $maxScale, 5)
+                $result = bccomp($maxScale, '0',  $precision) > 0
+                    ? bcdiv($scale, $maxScale,  $precision)
                     : '0';
+
+                return $result;
             });
 
-            $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
-                $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', 5);
-                return bcadd($carry, $weighted, 5);
+            $sawScore = $normalizedScales->reduce(function ($carry, $value, $key) use ($criteriaWeights, $precision) {
+                $weighted = bcmul($value, $criteriaWeights[$key] ?? '0', $precision);
+                return bcadd($carry, $weighted, $precision);
             }, '0');
 
-            $vektorS = $criteriaScales->reduce(function ($carry, $value, $key) use ($weights) {
-                $weight = (float) $weights[$key];
+            $vektorS = $criteriaScales->reduce(function ($carry, $value, $key) use ($criteriaWeights) {
+                $weight = (float) ($criteriaWeights[$key] ?? 0);
                 $originalValue = (float) $value;
                 $safeValue = $originalValue > 0 ? $originalValue : 0.0001;
-                $powered = pow($safeValue, $weight);
+
+                if ($key === 'pengeluaran') {
+                    $powered = pow($safeValue, -$weight);
+                } else {
+                    $powered = pow($safeValue, $weight);
+                }
+
                 return $carry * $powered;
             }, 1.0);
 
-            $vektorSFormatted = number_format($vektorS, 5, '.', '');
+            $vektorSFormatted = number_format($vektorS, $precision, '.', '');
 
             return [
                 'rtm_id' => $rtm->id,
@@ -728,10 +789,10 @@ class ResultController extends Controller
 
         $totalVektorS = (string) $sawResults->sum('vektor_s');
 
-        $wpResults = $sawResults->map(function ($result) use ($totalVektorS) {
+        $wpResults = $sawResults->map(function ($result) use ($totalVektorS, $precision) {
             $vektorSString = (string) $result['vektor_s'];
-            $wpScore = bccomp($totalVektorS, '0', 5) > 0
-                ? bcdiv($vektorSString, $totalVektorS, 5)
+            $wpScore = bccomp($totalVektorS, '0', $precision) > 0
+                ? bcdiv($vektorSString, $totalVektorS, $precision)
                 : '0';
 
             return [

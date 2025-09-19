@@ -18,7 +18,7 @@ class Criteria extends Model
 
     protected $casts = [
         'weight' => 'decimal:3',
-        'scale'  => 'decimal:3',
+        'scale'  => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

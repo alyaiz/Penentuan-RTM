@@ -15,7 +15,7 @@ class Wp extends Model
     ];
 
     protected $casts = [
-        'score' => 'decimal:6',
+        'score' => 'decimal:3',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
