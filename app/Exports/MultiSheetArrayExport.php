@@ -64,7 +64,7 @@ class SingleSheetExport implements FromArray, WithHeadings, WithStyles, WithColu
     $headings = [];
 
     if (!empty($this->info)) {
-      $headings[] = ['ANALISIS SENSITIVITAS (MCR) - SAW & WP'];
+      $headings[] = ['Analisis Sensitivitas (MCR) — SAW & WP'];
       $headings[] = ['Dicetak: ' . now()->format('d/m/Y H:i:s')];
       $headings[] = [''];
 
@@ -87,24 +87,12 @@ class SingleSheetExport implements FromArray, WithHeadings, WithStyles, WithColu
 
   public function columnWidths(): array
   {
-    if ($this->title === 'Ringkasan MCR') {
-      return [
-        'A' => 8,   // No
-        'B' => 30,  // Kriteria
-        'C' => 15,  // MCR SAW
-        'D' => 15,  // MCR WP
-        'E' => 18,  // Level
-      ];
-    } else {
-      return [
-        'A' => 8,   // No
-        'B' => 25,  // Kriteria
-        'C' => 15,  // Delta
-        'D' => 18,  // SAW %
-        'E' => 18,  // WP %
-        'F' => 15,  // Dominan
-      ];
-    }
+    return [
+      'A' => 35,  // Kriteria
+      'B' => 10,  // Δ Bobot
+      'C' => 18,  // Δ% SAW
+      'D' => 18,  // Δ% WP
+    ];
   }
 
   public function styles(Worksheet $sheet)
@@ -122,7 +110,12 @@ class SingleSheetExport implements FromArray, WithHeadings, WithStyles, WithColu
       $cellValue = $sheet->getCell('A' . $i)->getValue();
       if (!empty($cellValue)) {
         $sheet->getStyle('A' . $i)->getFont()->setSize(10);
-        if (strpos($cellValue, ':') !== false) {
+        if (
+          strpos($cellValue, ':') !== false ||
+          strpos($cellValue, 'Informasi') !== false ||
+          strpos($cellValue, 'Detail') !== false ||
+          strpos($cellValue, 'Kesimpulan') !== false
+        ) {
           $sheet->getStyle('A' . $i)->getFont()->setBold(true);
         }
       }
@@ -155,44 +148,23 @@ class SingleSheetExport implements FromArray, WithHeadings, WithStyles, WithColu
         ]
       ]);
 
-      $sheet->getStyle('A' . $dataStartRow . ':A' . $totalRows)
+      $sheet->getStyle('B' . $dataStartRow . ':B' . $totalRows)
         ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-      if ($this->title === 'Ringkasan MCR') {
-        $levelColumn = chr(64 + count($this->headers));
+      $sheet->getStyle('C' . $dataStartRow . ':D' . $totalRows)
+        ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-        for ($row = $dataStartRow; $row <= $totalRows; $row++) {
-          $levelValue = $sheet->getCell($levelColumn . $row)->getValue();
-          $color = '';
+      $sheet->getStyle('A' . $totalRows . ':D' . $totalRows)
+        ->getFont()->setBold(true);
 
-          switch ($levelValue) {
-            case 'Tinggi':
-              $color = 'FB2C36';
-              break;
-            case 'Sedang':
-              $color = 'FFDF20';
-              break;
-            case 'Rendah':
-              $color = '05DF72';
-              break;
-          }
+      $sheet->getStyle('A' . $totalRows . ':D' . $totalRows)->applyFromArray([
+        'fill' => [
+          'fillType' => Fill::FILL_SOLID,
+          'startColor' => ['rgb' => 'F8F9FA']
+        ]
+      ]);
 
-          if ($color) {
-            $sheet->getStyle($levelColumn . $row)->applyFromArray([
-              'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => $color]
-              ]
-            ]);
-          }
-        }
-
-        $sheet->getStyle('C' . $dataStartRow . ':D' . $totalRows)
-          ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-      } else {
-        $sheet->getStyle('D' . $dataStartRow . ':E' . $totalRows)
-          ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-      }
+      $sheet->mergeCells("A{$totalRows}:B{$totalRows}");
     }
 
     return [];

@@ -140,7 +140,7 @@
         <h3>Level Delta:</h3>
         <div class="info-value">
           @foreach ($analysis_info['delta_levels'] as $delta)
-            {{ $delta * 100 }}%{{ !$loop->last ? ', ' : '' }}
+            {{ $delta }}{{ !$loop->last ? ', ' : '' }}
           @endforeach
         </div>
       </div>
@@ -148,55 +148,6 @@
         <h3>Metode:</h3>
         <div class="info-value">SAW & WP</div>
       </div>
-    </div>
-  </div>
-
-  <h2>Ringkasan Sensitivitas Kriteria (MCR - Mean Change Rate)</h2>
-  <table>
-    <thead>
-      <tr>
-        <th style="width: 40%;">Kriteria</th>
-        <th style="width: 25%;">MCR SAW (%)</th>
-        <th style="width: 25%;">MCR WP (%)</th>
-        <th style="width: 10%;">Level</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach ($summary as $s)
-        @php
-          $wpMcr = abs($s['mcr_wp']);
-          $levelClass = '';
-          $levelText = '';
-          if ($wpMcr >= 1.0) {
-              $levelClass = 'high-sensitivity';
-              $levelText = 'Tinggi';
-          } elseif ($wpMcr >= 0.3) {
-              $levelClass = 'medium-sensitivity';
-              $levelText = 'Sedang';
-          } else {
-              $levelClass = 'low-sensitivity';
-              $levelText = 'Rendah';
-          }
-        @endphp
-        <tr>
-          <td>{{ $s['kriteria'] }}</td>
-          <td class="{{ $s['mcr_saw'] >= 0 ? 'positive' : 'negative' }}">
-            {{ number_format(abs($s['mcr_saw']), 6, '.', '') }}
-          </td>
-          <td class="{{ $s['mcr_wp'] >= 0 ? 'positive' : 'negative' }}">
-            {{ number_format(abs($s['mcr_wp']), 6, '.', '') }}
-          </td>
-          <td class="{{ $levelClass }}">{{ $levelText }}</td>
-        </tr>
-      @endforeach
-    </tbody>
-  </table>
-
-  <div class="summary-note">
-    <h3 style="margin-top: 0">Interpretasi MCR:</h3>
-    <div class="info-value">MCR (Mean Change Rate) menunjukkan rata-rata perubahan persentase skor maksimum ketika bobot
-      kriteria diubah.
-      Nilai yang lebih tinggi menunjukkan kriteria tersebut lebih sensitif terhadap perubahan bobot.
     </div>
   </div>
 
@@ -208,97 +159,48 @@
         <th style="width: 15%;">Δ Bobot</th>
         <th style="width: 20%;">Δ% SAW</th>
         <th style="width: 20%;">Δ% WP</th>
-        <th style="width: 10%;">Dominan</th>
       </tr>
     </thead>
     <tbody>
+      @php
+        $totalSaw = 0;
+        $totalWp = 0;
+      @endphp
+
       @foreach ($rows as $r)
         @php
-          $sawAbs = abs($r['avg_change_saw']);
-          $wpAbs = abs($r['avg_change_wp']);
-          $dominant = $wpAbs > $sawAbs ? 'WP' : 'SAW';
-          $dominantClass = $wpAbs > $sawAbs ? 'text-primary' : 'text-secondary';
+          $totalSaw += $r['saw_difference'];
+          $totalWp += $r['wp_difference'];
         @endphp
         <tr>
           <td>{{ $r['kriteria'] }}</td>
           <td>{{ $r['delta'] }}</td>
-          <td class="{{ $r['avg_change_saw'] >= 0 ? 'positive' : 'negative' }}">
-            {{ number_format($r['avg_change_saw'], 6, '.', '') }}%
+          <td class="{{ $r['saw_difference'] >= 0 ? 'positive' : 'negative' }}">
+            {{ number_format($r['saw_difference'], 3, '.', '') }}%
           </td>
-          <td class="{{ $r['avg_change_wp'] >= 0 ? 'positive' : 'negative' }}">
-            {{ number_format($r['avg_change_wp'], 6, '.', '') }}%
-          </td>
-          <td>
-            {{ $dominant }}
+          <td class="{{ $r['wp_difference'] >= 0 ? 'positive' : 'negative' }}">
+            {{ number_format($r['wp_difference'], 3, '.', '') }}%
           </td>
         </tr>
       @endforeach
+
+      <tr style="font-weight: bold; background: #f9fafb;">
+        <td colspan="2">Total</td>
+        <td>{{ number_format($totalSaw, 3, '.', '') }}%</td>
+        <td>{{ number_format($totalWp, 3, '.', '') }}%</td>
+      </tr>
     </tbody>
   </table>
 
-  <h2>Perbandingan Metode SAW vs WP</h2>
-  <div class="info-box">
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Rata-rata Sensitivitas SAW:</h3>
-        <div class="info-value">
-          {{ number_format($analysis_info['method_comparison']['saw_average_sensitivity'], 4, '.', '') }}%</div>
-      </div>
-      <div class="info-item">
-        <h3>Rata-rata Sensitivitas WP:</h3>
-        <div class="info-value">
-          {{ number_format($analysis_info['method_comparison']['wp_average_sensitivity'], 4, '.', '') }}%</div>
-      </div>
-      <div class="info-item">
-        <h3>Rasio Sensitivitas (WP/SAW):</h3>
-        <div class="info-value">
-          {{ number_format($analysis_info['method_comparison']['sensitivity_ratio'], 1, '.', '') }}x</div>
-      </div>
-    </div>
-
-    <div class="info-grid" style="margin-top: 12px;">
-      <div class="info-item">
-        <h3>Kriteria Paling Sensitif:</h3>
-        <div class="info-value">{{ $analysis_info['method_comparison']['most_sensitive_criteria'] }}</div>
-      </div>
-      <div class="info-item">
-        <h3>Kriteria Paling Stabil:</h3>
-        <div class="info-value">{{ $analysis_info['method_comparison']['least_sensitive_criteria'] }}</div>
-      </div>
-      <div class="info-item">
-        <h3>Metode Lebih Stabil:</h3>
-        <div class="info-value">
-          {{ $analysis_info['method_comparison']['saw_average_sensitivity'] < $analysis_info['method_comparison']['wp_average_sensitivity'] ? 'SAW' : 'WP' }}
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="summary-note">
     <h3 style="margin-top: 0">Kesimpulan Analisis:</h3>
-    <ul class="conclusion-list">
-      <li>
-        Stabilitas: Metode
-        {{ $analysis_info['method_comparison']['saw_average_sensitivity'] < $analysis_info['method_comparison']['wp_average_sensitivity'] ? 'SAW lebih stabil' : 'WP lebih stabil' }}
-        dengan sensitivitas rata-rata lebih rendah
-      </li>
-      <li>
-        Responsivitas: Metode
-        {{ $analysis_info['method_comparison']['saw_average_sensitivity'] > $analysis_info['method_comparison']['wp_average_sensitivity'] ? 'SAW lebih responsif' : 'WP lebih responsif' }}
-        terhadap perubahan bobot kriteria
-      </li>
-      <li>
-        Kriteria Kritis:
-        {{ $analysis_info['method_comparison']['most_sensitive_criteria'] }} memerlukan perhatian khusus dalam
-        penentuan bobot
-      </li>
-      <li>
-        Validasi Model: Rasio sensitivitas
-        {{ number_format($analysis_info['method_comparison']['sensitivity_ratio'], 1) }}x menunjukkan
-        {{ $analysis_info['method_comparison']['sensitivity_ratio'] > 10 ? 'perbedaan signifikan' : 'perbedaan wajar' }}
-        antar metode
-      </li>
-    </ul>
+    <div class="info-value">
+      Metode paling sensitif berdasarkan total perubahan:
+      {{ abs($totalSaw) > abs($totalWp) ? 'SAW' : 'WP' }}
+      dengan total perubahan
+      {{ abs($totalSaw) > abs($totalWp) ? number_format($totalSaw, 3, '.', '') . '%' : number_format($totalWp, 3, '.', '') . '%' }}
+    </div>
+
   </div>
 
   <div style="margin-top: 24px; font-size: 10px; color: #495057; text-align: center;">

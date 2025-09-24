@@ -10,6 +10,7 @@ use App\Models\Setting;
 use App\Models\Wp;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -104,7 +105,7 @@ class ResultController extends Controller
     {
         try {
             $rtms = Rtm::withAllCriteria()->get();
-            $precision = 5;
+            $precision = 3;
 
             $maxCriteriaScales = [
                 'penghasilan' => (string) ($rtms->max(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
@@ -394,7 +395,7 @@ class ResultController extends Controller
     public function exportMcrPdf()
     {
         try {
-            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
+            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.5);
 
             $sensitivityResults = $this->buildSensitivitas();
 
@@ -406,17 +407,11 @@ class ResultController extends Controller
                 $wpChanges = [];
 
                 foreach ($deltas as $deltaLevel => $results) {
-                    $sawPercent = (float) str_replace('%', '', $results['saw_percent_change']);
-                    $wpPercent = (float) str_replace('%', '', $results['wp_percent_change']);
-
-                    $sawChanges[] = abs($sawPercent);
-                    $wpChanges[] = abs($wpPercent);
-
                     $detailRows[] = [
                         'kriteria' => $this->getCriteriaDisplayName($criteria),
-                        'delta' => '+' . ($deltaLevel * 100) . '%',
-                        'avg_change_saw' => $sawPercent,
-                        'avg_change_wp' => $wpPercent,
+                        'delta' => '+' . ($deltaLevel),
+                        'saw_difference' => $results['saw_difference'],
+                        'wp_difference' => $results['wp_difference'],
                     ];
                 }
 
@@ -464,126 +459,83 @@ class ResultController extends Controller
         }
     }
 
+
     public function exportMcrExcel()
     {
         try {
-            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
+            $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.5);
 
             $sensitivityResults = $this->buildSensitivitas();
 
-            $summary = [];
             $detailRows = [];
+            $sawTotal = 0;
+            $wpTotal = 0;
 
             foreach ($sensitivityResults as $criteria => $deltas) {
-                $sawChanges = [];
-                $wpChanges = [];
-
                 foreach ($deltas as $deltaLevel => $results) {
-                    $sawPercent = (float) str_replace('%', '', $results['saw_percent_change']);
-                    $wpPercent = (float) str_replace('%', '', $results['wp_percent_change']);
-
-                    $sawChanges[] = abs($sawPercent);
-                    $wpChanges[] = abs($wpPercent);
-
                     $detailRows[] = [
                         'kriteria' => $this->getCriteriaDisplayName($criteria),
-                        'delta' => '+' . ($deltaLevel * 100) . '%',
-                        'avg_change_saw' => $sawPercent,
-                        'avg_change_wp' => $wpPercent,
+                        'delta' => '+' . $deltaLevel,
+                        'saw_percentage' => $results['saw_difference'],
+                        'wp_percentage' => $results['wp_difference'],
                     ];
+                    $sawTotal += $results['saw_difference'];
+                    $wpTotal += $results['wp_difference'];
                 }
-
-                $summary[] = [
-                    'kriteria' => $this->getCriteriaDisplayName($criteria),
-                    'mcr_saw' => count($sawChanges) > 0 ? array_sum($sawChanges) / count($sawChanges) : 0,
-                    'mcr_wp' => count($wpChanges) > 0 ? array_sum($wpChanges) / count($wpChanges) : 0,
-                ];
             }
-
-            usort($summary, function ($a, $b) {
-                return $b['mcr_wp'] <=> $a['mcr_wp'];
-            });
 
             $analysisInfo = [
                 'total_rtm' => Rtm::count(),
                 'delta_levels' => [$mcrDelta, $mcrDelta + $mcrDelta],
-                'method_comparison' => $this->getmetodeComparison($summary),
+                'saw_total' => $sawTotal,
+                'wp_total' => $wpTotal,
             ];
 
-            $summaryHead = ['No', 'Kriteria', 'MCR SAW (%)', 'MCR WP (%)', 'Level Sensitivitas'];
-            $summaryData = [];
-
-            foreach ($summary as $index => $s) {
-                $wpMcr = abs($s['mcr_wp']);
-                $levelText = '';
-                if ($wpMcr >= 1.0) {
-                    $levelText = 'Tinggi';
-                } elseif ($wpMcr >= 0.3) {
-                    $levelText = 'Sedang';
-                } else {
-                    $levelText = 'Rendah';
-                }
-
-                $summaryData[] = [
-                    $index + 1,
-                    $s['kriteria'],
-                    number_format(abs($s['mcr_saw']), 6, '.', ''),
-                    number_format(abs($s['mcr_wp']), 6, '.', ''),
-                    $levelText,
-                ];
-            }
-
-            $detailHead = ['No', 'Kriteria', 'Delta Bobot', 'Perubahan SAW (%)', 'Perubahan WP (%)', 'Metode Dominan'];
+            $detailHead = ['Kriteria', 'Δ Bobot', 'Δ% SAW', 'Δ% WP'];
             $detailData = [];
 
-            foreach ($detailRows as $index => $r) {
-                $sawAbs = abs($r['avg_change_saw']);
-                $wpAbs = abs($r['avg_change_wp']);
-                $dominant = $wpAbs > $sawAbs ? 'WP' : 'SAW';
-
+            foreach ($detailRows as $r) {
                 $detailData[] = [
-                    $index + 1,
                     $r['kriteria'],
                     $r['delta'],
-                    number_format($r['avg_change_saw'], 6, '.', '') . '%',
-                    number_format($r['avg_change_wp'], 6, '.', '') . '%',
-                    $dominant,
+                    number_format($r['saw_percentage'], 3, '.', '') . '%',
+                    number_format($r['wp_percentage'], 3, '.', '') . '%',
                 ];
             }
 
+            $detailData[] = [
+                'Total',
+                null,
+                number_format($sawTotal, 3, '.', '') . '%',
+                number_format($wpTotal, 3, '.', '') . '%',
+            ];
+
+
+            $mostSensitiveMethod = $sawTotal > $wpTotal ? 'SAW' : 'WP';
+            $mostSensitiveTotal = max($sawTotal, $wpTotal);
+
             $sheetsData = [
-                'Ringkasan MCR' => [
-                    'headers' => $summaryHead,
-                    'data' => $summaryData,
-                    'info' => [
-                        'Total RTM: ' . number_format($analysisInfo['total_rtm']),
-                        'Delta Levels: ' . implode(', ', array_map(fn($d) => ($d * 100) . '%', $analysisInfo['delta_levels'])),
-                        'Metode: SAW & WP',
-                        'Rata-rata Sensitivitas SAW: ' . number_format($analysisInfo['method_comparison']['saw_average_sensitivity'], 4) . '%',
-                        'Rata-rata Sensitivitas WP: ' . number_format($analysisInfo['method_comparison']['wp_average_sensitivity'], 4) . '%',
-                        'Rasio Sensitivitas (WP/SAW): ' . number_format($analysisInfo['method_comparison']['sensitivity_ratio'], 1) . 'x',
-                        'Kriteria Paling Sensitif: ' . $analysisInfo['method_comparison']['most_sensitive_criteria'],
-                        'Kriteria Paling Stabil: ' . $analysisInfo['method_comparison']['least_sensitive_criteria'],
-                        'Metode Lebih Stabil: ' . ($analysisInfo['method_comparison']['saw_average_sensitivity'] < $analysisInfo['method_comparison']['wp_average_sensitivity'] ? 'SAW' : 'WP'),
-                    ]
-                ],
-                'Detail per Delta' => [
+                'Detail Analisis Sensitivitas' => [
                     'headers' => $detailHead,
                     'data' => $detailData,
                     'info' => [
-                        'MCR (Mean Change Rate) menunjukkan rata-rata perubahan persentase skor maksimum',
-                        'ketika bobot kriteria diubah. Nilai yang lebih tinggi menunjukkan kriteria',
-                        'tersebut lebih sensitif terhadap perubahan bobot.',
+                        'Informasi Analisis',
+                        'Total RTM: ' . number_format($analysisInfo['total_rtm']),
+                        'Level Delta: ' . implode(', ', $analysisInfo['delta_levels']),
+                        'Metode: SAW & WP',
                         '',
-                        'Level Sensitivitas:',
-                        '- Tinggi: MCR WP >= 1.0%',
-                        '- Sedang: MCR WP >= 0.3%',
-                        '- Rendah: MCR WP < 0.3%',
+                        'Detail Analisis Sensitivitas per Delta',
+                        '',
+                        'Kesimpulan Analisis:',
+                        'Metode paling sensitif berdasarkan total perubahan: ' . $mostSensitiveMethod . ' dengan total perubahan ' . number_format($mostSensitiveTotal, 3) . '%',
+                        '',
+                        'Laporan ini dihasilkan secara otomatis oleh sistem Decision Support System',
+                        'Analisis sensitivitas menggunakan Mean Change Rate (MCR) dengan multiple delta levels'
                     ]
                 ]
             ];
 
-            $filename = 'sensitivitas-saw-wp.xlsx';
+            $filename = 'sensitivitas-saw-wp (' . date('Y-m-d_H-i-s') . ').xlsx';
 
             return Excel::download(new MultiSheetArrayExport($sheetsData), $filename);
         } catch (\Exception $e) {
@@ -626,13 +578,11 @@ class ResultController extends Controller
 
     public function buildSensitivitas()
     {
-        // 1. Gunakan delta yang lebih kecil untuk analisis sensitivitas
-        $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.05);
-
-        // 2. Hitung ulang baseline scores untuk memastikan konsistensi
+        $mcrDelta = (float) (Setting::where('key', 'mcr_delta')->value('value') ?? 0.5);
+        $sawMaxScore = Saw::max('score');
+        $wpMaxScore = Wp::max('score');
         $rtms = Rtm::withAllCriteria()->get();
 
-        // Dapatkan max criteria scales
         $maxCriteriaScales = [
             'penghasilan' => (string) ($rtms->max(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
             'pengeluaran' => (string) ($rtms->max(fn($rtm) => $rtm->pengeluaranCriteria->scale ?? 0)),
@@ -644,7 +594,6 @@ class ResultController extends Controller
             'penerangan' => (string) ($rtms->max(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
         ];
 
-        // Dapatkan min criteria scales
         $minCriteriaScales = [
             'penghasilan' => (string) ($rtms->min(fn($rtm) => $rtm->penghasilanCriteria->scale ?? 0)),
             'pengeluaran' => (string) ($rtms->min(fn($rtm) => $rtm->pengeluaranCriteria->scale ?? 0)),
@@ -656,7 +605,6 @@ class ResultController extends Controller
             'penerangan' => (string) ($rtms->min(fn($rtm) => $rtm->peneranganRumahCriteria->scale ?? 0)),
         ];
 
-        // Ambil bobot asli dari RTM pertama sebagai referensi
         $firstRtm = $rtms->first();
         $originalWeights = [
             'penghasilan' => (float) ($firstRtm->penghasilanCriteria->weight ?? 0.125),
@@ -669,44 +617,48 @@ class ResultController extends Controller
             'penerangan' => (float) ($firstRtm->peneranganRumahCriteria->weight ?? 0.125),
         ];
 
-        // 3. Hitung baseline scores dengan bobot asli untuk konsistensi
-        $baselineResults = $this->calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $originalWeights);
-        $sawMaxScore = $baselineResults['saw_max'];
-        $wpMaxScore = $baselineResults['wp_max'];
-
         $sensitivityResults = [];
         $criteriaNames = array_keys($originalWeights);
 
-        // 4. Tambahkan beberapa tingkat delta untuk analisis yang lebih comprehensive
         $deltaLevels = [$mcrDelta, $mcrDelta + $mcrDelta];
 
-        // Loop untuk setiap kriteria
         foreach ($criteriaNames as $targetCriteria) {
             $sensitivityResults[$targetCriteria] = [];
 
             foreach ($deltaLevels as $deltaLevel) {
-                // Modifikasi bobot dengan delta
                 $modifiedWeights = $originalWeights;
                 $modifiedWeights[$targetCriteria] += $deltaLevel;
 
-                // 5. Normalisasi bobot dengan precision yang lebih baik
                 $totalWeight = array_sum($modifiedWeights);
                 foreach ($modifiedWeights as $key => $weight) {
-                    $modifiedWeights[$key] = $weight / $totalWeight;
+                    $modifiedWeights[$key] = round($weight / $totalWeight, 3);
                 }
 
-                // Hitung scores dengan bobot yang dimodifikasi
                 $modifiedResults = $this->calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $modifiedWeights);
 
-                $sawDifference = bcsub((string) $modifiedResults['saw_max'], (string) $sawMaxScore, 5);
-                $wpDifference = bcsub((string) $modifiedResults['wp_max'], (string) $wpMaxScore, 5);
+                $sawDifference = bcsub((string) $modifiedResults['saw_max'], (string) $sawMaxScore, 3);
+                $wpDifference = bcsub((string) $modifiedResults['wp_max'], (string) $wpMaxScore, 3);
 
-                $sensitivityResults[$targetCriteria][number_format($deltaLevel, 2)] = [
+                $sensitivityResults[$targetCriteria][number_format($deltaLevel, 1)] = [
                     'saw_difference' => $sawDifference,
                     'wp_difference' => $wpDifference,
-                    'saw_percent_change' => $sawMaxScore > 0 ? bcmul(bcdiv($sawDifference, (string) $sawMaxScore, 10), '100', 5) . '%' : '0%',
-                    'wp_percent_change' => $wpMaxScore > 0 ? bcmul(bcdiv($wpDifference, (string) $wpMaxScore, 10), '100', 5) . '%' : '0%',
                 ];
+
+                // Log::info('Sensitivity Analysis', [
+                //     'criteria' => $targetCriteria,
+                //     'delta_level' => number_format($deltaLevel, 1),
+                //     'modified_weight' => $modifiedWeights,
+                //     'sensitivity_result' => [
+                //         'saw_modified_result' => round($modifiedResults['saw_max'], 3),
+                //         'saw_max_score' => round($sawMaxScore, 3),
+                //         'wp_modified_result' => round($modifiedResults['wp_max'], 3),
+                //         'wp_max_score' => round($wpMaxScore, 3),
+                //         'results' => [
+                //             'saw_difference' => round($sawDifference, 3),
+                //             'wp_difference' => round($wpDifference, 3),
+                //         ]
+                //     ]
+                // ]);
             }
         }
 
@@ -715,7 +667,7 @@ class ResultController extends Controller
 
     private function calculateMcr($rtms, $maxCriteriaScales, $minCriteriaScales, $weights)
     {
-        $precision = 5;
+        $precision = 3;
 
         $sawResults = $rtms->map(function ($rtm) use ($maxCriteriaScales, $minCriteriaScales,  $weights, $precision) {
             $criteriaScales = collect([
