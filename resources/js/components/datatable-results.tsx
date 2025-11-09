@@ -131,7 +131,7 @@ export default function DataTableResults({
                         <Badge
                             className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                             style={{
-                                backgroundColor: score >= tresholds.saw ? 'var(--chart-3)' : 'var(--chart-1)',
+                                backgroundColor: score >= tresholds.saw ? 'var(--chart-4)' : 'var(--chart-5)',
                             }}
                         >
                             {score < tresholds.saw ? 'Miskin' : 'Tidak Miskin'}
@@ -160,7 +160,7 @@ export default function DataTableResults({
                         <Badge
                             className="flex gap-1 px-1.5 text-white [&_svg]:size-3"
                             style={{
-                                backgroundColor: score >= tresholds.wp ? 'var(--chart-3)' : 'var(--chart-1)',
+                                backgroundColor: score >= tresholds.wp ? 'var(--chart-4)' : 'var(--chart-5)',
                             }}
                         >
                             {score < tresholds.wp ? 'Miskin' : 'Tidak Miskin'}
