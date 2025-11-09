@@ -5,7 +5,7 @@ import { Paginator, User, type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Pengguna', href: '/users' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Admin', href: '/users' }];
 
 export default function Users() {
     const { props } = usePage<{ users: Paginator<User> }>();
@@ -18,10 +18,10 @@ export default function Users() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Pengguna" />
+            <Head title="Admin" />
             <div className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl">
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                    <Heading title="Manajemen Pengguna" description="Kelola data pengguna, ubah informasi akun, atau tambahkan pengguna baru." />
+                    <Heading title="Manajemen Admin" description="Kelola data admin, ubah informasi akun, atau tambahkan admin baru." />
                     <DataTableUsers
                         data={data}
                         pageIndex={pageIndex}

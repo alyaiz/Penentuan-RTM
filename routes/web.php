@@ -22,7 +22,7 @@ Route::prefix('publik')->name('public.')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('pengguna', UserController::class)->middleware(['is_super_admin']);
+    Route::resource('admin', UserController::class)->middleware(['is_super_admin']);
 
     Route::resource('rumah-tangga-miskin', RtmController::class);
     Route::post('/rumah-tangga-miskin/import', [RtmImportController::class, 'import'])->name('rumah-tangga-miskin.import');

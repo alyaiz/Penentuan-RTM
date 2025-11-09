@@ -33,8 +33,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             icon: LayoutGrid,
         },
         {
-            title: 'Pengguna',
-            href: '/pengguna',
+            title: 'Admin',
+            href: '/admin',
             icon: User,
         },
         {
@@ -81,7 +81,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 <>
                                                     {mainNavItems
                                                         .filter((item) => {
-                                                            if (item.href === '/pengguna' && auth.user?.role !== 'super_admin') return false;
+                                                            if (item.href === '/admin' && auth.user?.role !== 'super_admin') return false;
                                                             return true;
                                                         })
                                                         .map((item) => (
@@ -120,7 +120,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     <>
                                         {mainNavItems
                                             .filter((item) => {
-                                                if (item.href === '/pengguna' && auth.user?.role !== 'super_admin') return false;
+                                                if (item.href === '/admin' && auth.user?.role !== 'super_admin') return false;
                                                 return true;
                                             })
                                             .map((item, index) => (

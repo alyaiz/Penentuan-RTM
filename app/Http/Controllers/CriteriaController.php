@@ -109,7 +109,7 @@ class CriteriaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus pengguna.');
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus admin.');
         }
     }
 }

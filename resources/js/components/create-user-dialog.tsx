@@ -32,10 +32,10 @@ export default function CreateUserDialog() {
     const handleCreate: FormEventHandler = (e) => {
         e.preventDefault();
 
-        post('/pengguna', {
+        post('/admin', {
             onSuccess: () => {
                 toast.success('Berhasil Disimpan', {
-                    description: 'Data pengguna baru berhasil disimpan.',
+                    description: 'Data admin baru berhasil disimpan.',
                 });
                 setOpen(false);
             },
@@ -105,19 +105,19 @@ export default function CreateUserDialog() {
             <DialogTrigger asChild>
                 <Button variant="outline" className="w-full">
                     <PlusIcon />
-                    <span className="hidden lg:inline">Tambah Pengguna</span>
-                    <span className="lg:hidden">Pengguna</span>
+                    <span className="hidden lg:inline">Tambah Admin</span>
+                    <span className="lg:hidden">Admin</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleCreate}>
                     <DialogHeader>
-                        <DialogTitle>Tambah Pengguna</DialogTitle>
-                        <DialogDescription>Tambah data pengguna disini. Klik simpan ketika selesai.</DialogDescription>
+                        <DialogTitle>Tambah Admin</DialogTitle>
+                        <DialogDescription>Tambah data admin disini. Klik simpan ketika selesai.</DialogDescription>
                     </DialogHeader>
                     <div className="my-4 grid min-h-[50vh] gap-4 overflow-y-auto md:h-[40vh] lg:h-[45vh] xl:max-h-[65vh] xl:min-h-[55vh]">
                         {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
-                        {renderInputField('Email', 'email', 'Masukkan email pengguna', 'email')}
+                        {renderInputField('Email', 'email', 'Masukkan email admin', 'email')}
 
                         {renderSelectField('Peran', 'role', [
                             { value: 'super_admin', label: 'Super Admin' },

@@ -43,11 +43,11 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
             setData('password_confirmation', '');
         }
 
-        put(`/pengguna/${user.id}`, {
+        put(`/admin/${user.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Berhasil Diperbarui', {
-                    description: 'Data pengguna telah berhasil diperbarui.',
+                    description: 'Data admin telah berhasil diperbarui.',
                 });
                 setOpen(false);
                 setEditPassword(false);
@@ -119,19 +119,19 @@ export default function EditUserDialog({ user }: EditUserDialogProps) {
             <DialogTrigger asChild>
                 <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
                     <Pen className="size-3" />
-                    <span className="sr-only">Tombol edit pengguna</span>
+                    <span className="sr-only">Tombol edit admin</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleEdit}>
                     <DialogHeader>
-                        <DialogTitle>Edit Pengguna</DialogTitle>
-                        <DialogDescription>Edit data pengguna di sini. Klik simpan ketika selesai.</DialogDescription>
+                        <DialogTitle>Edit Admin</DialogTitle>
+                        <DialogDescription>Edit data admin di sini. Klik simpan ketika selesai.</DialogDescription>
                     </DialogHeader>
 
                     <div className="my-4 grid min-h-[50vh] gap-4 overflow-y-auto md:h-[40vh] lg:h-[45vh] xl:max-h-[65vh] xl:min-h-[55vh]">
                         {renderInputField('Nama', 'name', 'Masukkan nama lengkap')}
-                        {renderInputField('Email', 'email', 'Masukkan email pengguna', 'email')}
+                        {renderInputField('Email', 'email', 'Masukkan email admin', 'email')}
 
                         {renderSelectField('Peran', 'role', [
                             { value: 'super_admin', label: 'Super Admin' },

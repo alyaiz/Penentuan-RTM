@@ -58,7 +58,7 @@ class UserController extends Controller
 
         User::create($validated);
 
-        return redirect()->back()->with('success', 'Data Pengguna berhasil ditambahkan.');
+        return redirect()->back()->with('success', 'Data Admin berhasil ditambahkan.');
     }
 
     public function show(string $id)
@@ -91,7 +91,7 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->back()->with('success', 'Data pengguna berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Data admin berhasil diperbarui.');
     }
 
     public function destroy(string $id)
@@ -100,24 +100,24 @@ class UserController extends Controller
 
         if (!$user) {
             return redirect()->back()->withErrors([
-                'message' => 'Pengguna tidak ditemukan.',
+                'message' => 'Admin tidak ditemukan.',
             ]);
         }
 
         try {
             $user->delete();
 
-            return redirect()->back()->with('success', 'Data Pengguna berhasil dihapus.');
+            return redirect()->back()->with('success', 'Data Admin berhasil dihapus.');
         } catch (QueryException $e) {
             if ($e->getCode() === '23000') {
                 return redirect()->back()->withErrors([
-                    'message' => 'Pengguna tidak dapat dihapus karena sudah digunakan pada data lain.',
-                    'suggestion' => 'Nonaktifkan pengguna ini jika tidak ingin digunakan lagi.',
+                    'message' => 'Admin tidak dapat dihapus karena sudah digunakan pada data lain.',
+                    'suggestion' => 'Nonaktifkan admin ini jika tidak ingin digunakan lagi.',
                 ]);
             }
 
             return redirect()->back()->withErrors([
-                'message' => 'Terjadi kesalahan saat menghapus pengguna.',
+                'message' => 'Terjadi kesalahan saat menghapus admin.',
             ]);
         }
     }

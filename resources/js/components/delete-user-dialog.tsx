@@ -26,15 +26,15 @@ export default function DeleteUserDialog({ user }: DeleteUserDialogProps) {
     const handleDelete = () => {
         setIsSubmitting(true);
 
-        router.delete(`/pengguna/${user.id}`, {
+        router.delete(`/admin/${user.id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success('Berhasil Dihapus', {
-                    description: `Pengguna "${user.name}" telah berhasil dihapus.`,
+                    description: `Admin "${user.name}" telah berhasil dihapus.`,
                 });
             },
             onError: (err) => {
-                const errorMessage = err.message || 'Terjadi kesalahan saat menghapus pengguna.';
+                const errorMessage = err.message || 'Terjadi kesalahan saat menghapus admin.';
                 const suggestion = err.suggestion || '';
 
                 toast.error('Gagal Menghapus', {
@@ -52,14 +52,14 @@ export default function DeleteUserDialog({ user }: DeleteUserDialogProps) {
             <AlertDialogTrigger asChild>
                 <Button variant="outline" size="icon" className="h-7 w-7 rounded-md">
                     <Trash className="size-3" />
-                    <span className="sr-only">Tombol hapus pengguna</span>
+                    <span className="sr-only">Tombol hapus admin</span>
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Hapus Pengguna?</AlertDialogTitle>
+                    <AlertDialogTitle>Hapus Admin?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        Apakah kamu yakin ingin menghapus pengguna <strong>{user.name}</strong>? Tindakan ini tidak dapat dibatalkan.
+                        Apakah kamu yakin ingin menghapus admin <strong>{user.name}</strong>? Tindakan ini tidak dapat dibatalkan.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
