@@ -126,9 +126,9 @@ export default function DataTableUsers({ data, pageIndex, setPageIndex, totalPag
                         style={{
                             backgroundColor:
                                 row.original.status === 'aktif'
-                                    ? 'var(--chart-1)'
+                                    ? 'var(--chart-4)'
                                     : row.original.status === 'nonaktif'
-                                      ? 'var(--chart-3)'
+                                      ? 'var(--chart-5)'
                                       : undefined,
                         }}
                     >
